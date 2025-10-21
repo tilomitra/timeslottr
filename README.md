@@ -2,6 +2,15 @@
 
 Composable helpers for generating validated timeslots and reasoning about overlaps. The library ships as a modern dual ESM/CJS module compiled from TypeScript with bundled type definitions.
 
+## Key features
+
+- **Blazing fast:** Pure TypeScript with tight loops and no runtime allocations beyond what you request.
+- **Zero dependencies:** No external packages, so the footprint stays tiny and supply-chain risk is minimal.
+- **Universal runtime:** Works in Node.js, edge runtimes, and modern browsers thanks to dual ESM/CJS output.
+- **Timezone aware:** Resolve ISO strings, date-only, and time-only inputs against any IANA timezone.
+- **Flexible windows:** Buffers, exclusion ranges, interval overrides, and multiple alignment strategies.
+- **Typed metadata:** Slot metadata (index, duration, labels) is baked in and customizable.
+
 ## Installation
 
 ```bash
