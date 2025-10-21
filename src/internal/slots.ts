@@ -1,6 +1,6 @@
-import { MILLIS_PER_MINUTE } from './constants';
-import { NormalizedConfig } from './config';
-import { Timeslot, TimeslotMetadata } from '../types';
+import { MILLIS_PER_MINUTE } from './constants.js';
+import type { NormalizedConfig } from './config.js';
+import type { Timeslot, TimeslotMetadata } from '../types.js';
 
 export function addMinutes(date: Date, minutes: number): Date {
   return new Date(date.getTime() + minutes * MILLIS_PER_MINUTE);

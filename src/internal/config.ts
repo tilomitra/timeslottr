@@ -1,9 +1,9 @@
-import { MILLIS_PER_MINUTE } from './constants';
-import {
+import { MILLIS_PER_MINUTE } from './constants.js';
+import type {
   AlignmentStrategy,
   LabelFormatter,
   TimeslotGenerationConfig
-} from '../types';
+} from '../types.js';
 
 export interface NormalizedConfig {
   durationMs: number;

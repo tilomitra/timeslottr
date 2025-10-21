@@ -1,5 +1,5 @@
-import { DateValue, TimeOfDayInput } from '../types';
-import { MILLIS_PER_MINUTE } from './constants';
+import type { DateValue, TimeOfDayInput } from '../types.js';
+import { MILLIS_PER_MINUTE } from './constants.js';
 
 export type CalendarDate = {
   year: number;

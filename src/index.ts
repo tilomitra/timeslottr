@@ -1,5 +1,5 @@
-export { generateTimeslots } from './generate-timeslots';
-export { createTimeslot, overlaps } from './timeslot';
+export { generateTimeslots } from './generate-timeslots.js';
+export { createTimeslot, overlaps } from './timeslot.js';
 
 export type {
   AlignmentStrategy,
@@ -11,4 +11,4 @@ export type {
   TimeslotGenerationConfig,
   TimeslotMetadata,
   TimeslotRangeInput
-} from './types';
+} from './types.js';

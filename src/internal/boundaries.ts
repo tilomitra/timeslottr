@@ -1,6 +1,6 @@
-import { TimeslotBoundaryInput, TimeslotRangeInput } from '../types';
+import type { TimeslotBoundaryInput, TimeslotRangeInput } from '../types.js';
 import {
-  CalendarDate,
+  type CalendarDate,
   makeDateFromCalendarAndTime,
   parseDateValue,
   parseTimeOfDay,
@@ -9,7 +9,7 @@ import {
   isDateOnlyString,
   isTimeOnlyString,
   toCalendarDateFromInstant
-} from './time';
+} from './time.js';
 
 export interface BoundaryContext {
   timeZone?: string;

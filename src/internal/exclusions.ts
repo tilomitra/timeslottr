@@ -1,5 +1,5 @@
-import { TimeslotRangeInput } from '../types';
-import { BoundaryContext, resolveRange } from './boundaries';
+import type { TimeslotRangeInput } from '../types.js';
+import { resolveRange, type BoundaryContext } from './boundaries.js';
 
 export type Interval = { start: Date; end: Date };
 

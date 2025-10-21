@@ -1,9 +1,9 @@
-import { Timeslot, TimeslotGenerationConfig } from './types';
-import { calendarFromDateValue } from './internal/time';
-import { BoundaryContext, resolveRange } from './internal/boundaries';
-import { normalizeExclusions, subtractExclusions } from './internal/exclusions';
-import { validateConfig } from './internal/config';
-import { addMinutes, generateSlotsForSegment } from './internal/slots';
+import type { Timeslot, TimeslotGenerationConfig } from './types.js';
+import { calendarFromDateValue } from './internal/time.js';
+import { resolveRange, type BoundaryContext } from './internal/boundaries.js';
+import { normalizeExclusions, subtractExclusions } from './internal/exclusions.js';
+import { validateConfig } from './internal/config.js';
+import { addMinutes, generateSlotsForSegment } from './internal/slots.js';
 
 export function generateTimeslots(config: TimeslotGenerationConfig): Timeslot[] {
   const normalized = validateConfig(config);
