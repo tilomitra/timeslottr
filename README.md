@@ -35,6 +35,14 @@ console.log(slots.map((slot) => ({
 })));
 ```
 
+## Demo playground
+
+- Generate the latest library build: `npm run build`.
+- Serve the `demo/` directory with any static file server (for example: `npx serve demo`).
+- Open the displayed URL to interact with the Tailwind-powered playground that consumes the compiled module from `dist/`.
+
+When you are ready to publish the playground on GitHub Pages, copy the contents of `demo/` together with the freshly built `dist/` directory into your `gh-pages` branch so that `index.html` and the compiled bundle live side-by-side.
+
 ## Configuration
 
 | Option | Type | Description |
