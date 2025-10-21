@@ -19,6 +19,27 @@ describe('createTimeslot', () => {
 
     expect(() => createTimeslot(start, start)).toThrow(RangeError);
   });
+
+  it('throws when end is before start', () => {
+    const start = new Date('2024-01-01T10:00:00Z');
+    const end = new Date('2024-01-01T09:00:00Z');
+
+    expect(() => createTimeslot(start, end)).toThrow(RangeError);
+  });
+
+  it('throws when start is an invalid date', () => {
+    const invalidStart = new Date('invalid');
+    const validEnd = new Date('2024-01-01T10:00:00Z');
+
+    expect(() => createTimeslot(invalidStart, validEnd)).toThrow(TypeError);
+  });
+
+  it('throws when end is an invalid date', () => {
+    const validStart = new Date('2024-01-01T09:00:00Z');
+    const invalidEnd = new Date('invalid');
+
+    expect(() => createTimeslot(validStart, invalidEnd)).toThrow(TypeError);
+  });
 });
 
 describe('overlaps', () => {
@@ -34,6 +55,41 @@ describe('overlaps', () => {
     const b = createTimeslot(new Date('2024-01-01T09:00:00Z'), new Date('2024-01-01T10:00:00Z'));
 
     expect(overlaps(a, b)).toBe(false);
+  });
+
+  it('detects when first slot is completely contained in second', () => {
+    const a = createTimeslot(new Date('2024-01-01T09:00:00Z'), new Date('2024-01-01T10:00:00Z'));
+    const b = createTimeslot(new Date('2024-01-01T08:00:00Z'), new Date('2024-01-01T11:00:00Z'));
+
+    expect(overlaps(a, b)).toBe(true);
+  });
+
+  it('detects when second slot is completely contained in first', () => {
+    const a = createTimeslot(new Date('2024-01-01T08:00:00Z'), new Date('2024-01-01T11:00:00Z'));
+    const b = createTimeslot(new Date('2024-01-01T09:00:00Z'), new Date('2024-01-01T10:00:00Z'));
+
+    expect(overlaps(a, b)).toBe(true);
+  });
+
+  it('detects non-overlapping slots when first is completely before second', () => {
+    const a = createTimeslot(new Date('2024-01-01T08:00:00Z'), new Date('2024-01-01T09:00:00Z'));
+    const b = createTimeslot(new Date('2024-01-01T10:00:00Z'), new Date('2024-01-01T11:00:00Z'));
+
+    expect(overlaps(a, b)).toBe(false);
+  });
+
+  it('detects non-overlapping slots when first is completely after second', () => {
+    const a = createTimeslot(new Date('2024-01-01T10:00:00Z'), new Date('2024-01-01T11:00:00Z'));
+    const b = createTimeslot(new Date('2024-01-01T08:00:00Z'), new Date('2024-01-01T09:00:00Z'));
+
+    expect(overlaps(a, b)).toBe(false);
+  });
+
+  it('detects overlap when slots share only one millisecond', () => {
+    const a = createTimeslot(new Date('2024-01-01T08:00:00.000Z'), new Date('2024-01-01T09:00:00.001Z'));
+    const b = createTimeslot(new Date('2024-01-01T09:00:00.000Z'), new Date('2024-01-01T10:00:00.000Z'));
+
+    expect(overlaps(a, b)).toBe(true);
   });
 });
 

@@ -9,6 +9,7 @@ A TypeScript library for generating time slots and checking if they overlap. Wor
 - **Works everywhere:** Runs in Node.js, edge runtimes, and modern browsers.
 - **Timezone support:** Handles different date and time formats in any timezone.
 - **Flexible scheduling:** Add buffers, exclude time ranges, customize intervals, and control slot alignment.
+- **Comprehensive Test Coverage:** 90%+ test coverage.
 - **Built-in metadata:** Each slot includes useful information like index, duration, and custom labels.
 
 ## Installation
