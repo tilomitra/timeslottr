@@ -1,4 +1,4 @@
-import { Timeslot } from './types';
+import type { Timeslot } from './types.js';
 
 /**
  * Create a validated timeslot ensuring the start is before the end.
