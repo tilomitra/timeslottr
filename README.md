@@ -1,15 +1,15 @@
 # timeslottr
 
-Composable helpers for generating validated timeslots and reasoning about overlaps. The library ships as a modern dual ESM/CJS module compiled from TypeScript with bundled type definitions.
+A TypeScript library for generating time slots and checking if they overlap. Works with both ESM and CommonJS modules.
 
 ## Key features
 
-- **Blazing fast:** Pure TypeScript with tight loops and no runtime allocations beyond what you request.
-- **Zero dependencies:** No external packages, so the footprint stays tiny and supply-chain risk is minimal.
-- **Universal runtime:** Works in Node.js, edge runtimes, and modern browsers thanks to dual ESM/CJS output.
-- **Timezone aware:** Resolve ISO strings, date-only, and time-only inputs against any IANA timezone.
-- **Flexible windows:** Buffers, exclusion ranges, interval overrides, and multiple alignment strategies.
-- **Typed metadata:** Slot metadata (index, duration, labels) is baked in and customizable.
+- **Fast:** Written in TypeScript with efficient code that only uses the memory you need.
+- **Zero dependencies:** No external packages, keeping the library small and secure.
+- **Works everywhere:** Runs in Node.js, edge runtimes, and modern browsers.
+- **Timezone support:** Handles different date and time formats in any timezone.
+- **Flexible scheduling:** Add buffers, exclude time ranges, customize intervals, and control slot alignment.
+- **Built-in metadata:** Each slot includes useful information like index, duration, and custom labels.
 
 ## Installation
 
