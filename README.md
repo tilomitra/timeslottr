@@ -45,13 +45,36 @@ console.log(slots.map((slot) => ({
 })));
 ```
 
+## Multi-day scheduling
+
+To generate slots across a range of dates (e.g., "9am to 5pm" for every day from Jan 1st to Jan 7th), use `generateDailyTimeslots`. This helper applies your configuration to each day within the specified period.
+
+```ts
+import { generateDailyTimeslots } from 'timeslottr';
+
+const slots = generateDailyTimeslots(
+  // The outer window (e.g. a full week)
+  { start: '2024-01-01', end: '2024-01-08' },
+  {
+    // The daily schedule (applied to each day in the window)
+    range: { start: '09:00', end: '17:00' },
+    slotDurationMinutes: 60,
+    timezone: 'America/New_York',
+    // ... other config options (buffers, exclusions, etc.)
+  }
+);
+```
+
 ## Demo playground
 
-- Generate the latest library build: `npm run build`.
-- Serve the `demo/` directory with any static file server (for example: `npx serve demo`).
-- Open the displayed URL to interact with the Tailwind-powered playground that consumes the compiled module from `dist/`.
+The project includes a Next.js-based interactive playground in the `demo/` directory.
 
-When you are ready to publish the playground on GitHub Pages, copy the contents of `demo/` together with the freshly built `dist/` directory into your `gh-pages` branch so that `index.html` and the compiled bundle live side-by-side.
+1. Navigate to the demo directory: `cd demo`
+2. Install dependencies: `npm install`
+3. Start the development server: `npm run dev`
+4. Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+The demo showcases various configuration options and visualizes the generated timeslots.
 
 ## Configuration
 
@@ -88,6 +111,7 @@ Each generated `Timeslot` contains immutable `Date` instances and optional metad
 
 - `createTimeslot(start: Date, end: Date)` — runtime validation helper that clones the provided `Date` instances.
 - `overlaps(a: Timeslot, b: Timeslot)` — predicate that reports whether two slots intersect.
+- `generateDailyTimeslots(period, config)` — generates slots for each day in a larger period.
 
 ## Development
 
