@@ -1,5 +1,7 @@
 # timeslottr
 
+[**View Interactive Demo**](https://timeslottr.vercel.app/)
+
 A TypeScript library for generating time slots and checking if they overlap. Works with both ESM and CommonJS modules.
 
 ## Key features
@@ -67,7 +69,9 @@ const slots = generateDailyTimeslots(
 
 ## Demo playground
 
-The project includes a Next.js-based interactive playground in the `demo/` directory.
+The project includes a Next.js-based interactive playground hosted at [timeslottr.vercel.app](https://timeslottr.vercel.app/).
+
+You can also run it locally:
 
 1. Navigate to the demo directory: `cd demo`
 2. Install dependencies: `npm install`
