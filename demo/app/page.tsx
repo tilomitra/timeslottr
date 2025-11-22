@@ -34,7 +34,7 @@ const slots = generateDailyTimeslots(
   return (
     <div className="relative min-h-screen flex flex-col">
       <Header />
-      <main className="flex-1">
+      <main className="flex-1 px-4 md:px-0">
         <section className="space-y-6 pb-8 pt-6 md:pb-12 md:pt-10 lg:py-32">
           <div className="container mx-auto flex max-w-[64rem] flex-col items-center gap-4 text-center">
             <h1 className="font-sans text-4xl font-semibold tracking-tight sm:text-5xl md:text-6xl lg:text-7xl">
