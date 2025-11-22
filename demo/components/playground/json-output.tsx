@@ -3,6 +3,7 @@
 import * as React from "react";
 import { Button } from "@/components/ui/button";
 import { Copy, Check } from "lucide-react";
+import { Highlight, themes } from "prism-react-renderer";
 
 interface JsonOutputProps {
   data: any;
@@ -24,7 +25,7 @@ export function JsonOutput({ data }: JsonOutputProps) {
   }, [data]);
 
   return (
-    <div className="relative">
+    <div className="relative rounded-b-xl overflow-hidden">
       <Button
         variant="outline"
         size="icon"
@@ -33,9 +34,27 @@ export function JsonOutput({ data }: JsonOutputProps) {
       >
         {copied ? <Check className="h-3 w-3 text-green-500" /> : <Copy className="h-3 w-3" />}
       </Button>
-      <pre className="h-[300px] w-full overflow-auto border-none bg-muted/30 p-4 text-xs font-mono rounded-b-xl">
-        {jsonString}
-      </pre>>
+      <div className="h-[300px] w-full overflow-auto bg-muted/30 p-4">
+        <Highlight
+            theme={themes.vsLight}
+            code={jsonString}
+            language="json"
+        >
+            {({ className, style, tokens, getLineProps, getTokenProps }) => (
+            <pre style={{ ...style, background: 'transparent' }} className="text-[13px] font-mono leading-relaxed">
+                {tokens.map((line, i) => (
+                <div key={i} {...getLineProps({ line })} className="table-row">
+                    <span className="table-cell">
+                    {line.map((token, key) => (
+                        <span key={key} {...getTokenProps({ token })} />
+                    ))}
+                    </span>
+                </div>
+                ))}
+            </pre>
+            )}
+        </Highlight>
+      </div>
     </div>
   );
 }

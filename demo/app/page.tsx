@@ -1,9 +1,36 @@
 import { Header } from "@/components/header";
 import { Playground } from "@/components/playground/playground";
-import { Button } from "@/components/ui/button";
-import { ArrowRight, Copy, Terminal } from "lucide-react";
+import { CodeBlock } from "@/components/code-block";
+import { InstallCommand } from "@/components/install-command";
 
 export default function Home() {
+  const singleDayCode = `
+import { generateTimeslots } from 'timeslottr';
+
+const slots = generateTimeslots({
+  day: '2024-01-01',
+  timezone: 'America/New_York',
+  range: { start: '09:00', end: '17:00' },
+  slotDurationMinutes: 30,
+  excludedWindows: [
+    { start: '12:00', end: '13:00' }
+  ]
+});
+`;
+
+  const multiDayCode = `
+import { generateDailyTimeslots } from 'timeslottr';
+
+const slots = generateDailyTimeslots(
+  { start: '2024-01-01', end: '2024-01-08' },
+  {
+    range: { start: '09:00', end: '17:00' },
+    slotDurationMinutes: 60,
+    timezone: 'America/New_York'
+  }
+);
+`;
+
   return (
     <div className="relative min-h-screen flex flex-col">
       <Header />
@@ -18,11 +45,23 @@ export default function Home() {
               Handles exclusions, buffers, and alignments.
             </p>
             <div className="space-x-4">
-              <div className="flex items-center space-x-2 rounded-full border bg-muted/50 px-4 py-1.5 font-mono text-sm text-muted-foreground">
-                <Terminal className="h-4 w-4" />
-                <span>npm install timeslottr</span>
-              </div>
+              <InstallCommand />
             </div>
+          </div>
+        </section>
+
+        <section className="container mx-auto max-w-screen-xl pb-8 md:pb-12 lg:pb-24">
+          <div className="mx-auto flex flex-col items-center space-y-4 text-center mb-16">
+              <h2 className="font-semibold text-3xl leading-[1.1] tracking-tight sm:text-3xl md:text-4xl">
+                Effortless setup
+              </h2>
+              <p className="max-w-[42rem] leading-relaxed text-muted-foreground sm:text-lg sm:leading-7">
+                With a simple declarative API to define and use your schedules.
+              </p>
+          </div>
+          <div className="grid gap-8 md:grid-cols-2">
+            <CodeBlock title="Single Day Schedule" code={singleDayCode} />
+            <CodeBlock title="Multi-Day Schedule" code={multiDayCode} />
           </div>
         </section>
 
