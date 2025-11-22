@@ -1,14 +1,14 @@
 "use client";
 
 import * as React from "react";
-import { generateTimeslots, type TimeslotOptions } from "timeslottr";
+import { generateTimeslots, type TimeslotGenerationConfig } from "timeslottr";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ConfigForm } from "./config-form";
 import { Visualizer } from "./visualizer";
 import { JsonOutput } from "./json-output";
 
 export function Playground() {
-  const [config, setConfig] = React.useState<TimeslotOptions>({
+  const [config, setConfig] = React.useState<TimeslotGenerationConfig>({
     day: new Date().toISOString().split("T")[0],
     range: { start: "09:00", end: "17:00" },
     slotDurationMinutes: 30,
