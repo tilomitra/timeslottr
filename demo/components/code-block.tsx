@@ -2,11 +2,6 @@
 
 import * as React from "react";
 import { Highlight, themes } from "prism-react-renderer";
-import { useTheme } from "next-themes"; // I don't have next-themes installed, I'll just use a simple prop or default.
-// Wait, I implemented manual theme toggling in `theme-toggle.tsx` using localStorage.
-// I'll just default to a light theme for code or try to detect class.
-// For simplicity and robustness without extra deps, I'll use a custom clean style or just one theme that looks good in both (like vsDark usually looks okay, or github/vsLight).
-// Given the request for "light theme", I'll use vsLight.
 
 interface CodeBlockProps {
   title: string;
