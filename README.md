@@ -13,6 +13,7 @@ A TypeScript library for generating time slots and checking if they overlap. Wor
 - **Flexible scheduling:** Add buffers, exclude time ranges, customize intervals, and control slot alignment.
 - **Comprehensive Test Coverage:** 90%+ test coverage.
 - **Built-in metadata:** Each slot includes useful information like index, duration, and custom labels.
+- **Rich utilities:** Merge overlapping slots, find gaps in schedules, check containment, and serialize to/from JSON.
 
 ## Installation
 
@@ -111,11 +112,89 @@ Each generated `Timeslot` contains immutable `Date` instances and optional metad
 }
 ```
 
-## Additional utilities
+## Utilities
 
-- `createTimeslot(start: Date, end: Date)` — runtime validation helper that clones the provided `Date` instances.
-- `overlaps(a: Timeslot, b: Timeslot)` — predicate that reports whether two slots intersect.
-- `generateDailyTimeslots(period, config)` — generates slots for each day in a larger period.
+### Creating and validating slots
+
+```ts
+import { createTimeslot } from 'timeslottr';
+
+const slot = createTimeslot(
+  new Date('2024-01-01T09:00:00Z'),
+  new Date('2024-01-01T10:00:00Z')
+);
+// Throws TypeError for invalid dates, RangeError if end <= start
+```
+
+### Checking for overlaps
+
+```ts
+import { overlaps } from 'timeslottr';
+
+overlaps(slotA, slotB); // true if the two slots intersect
+```
+
+### Checking if a time falls within a slot
+
+```ts
+import { contains } from 'timeslottr';
+
+contains(slot, new Date('2024-01-01T09:30:00Z')); // true
+contains(slot, new Date('2024-01-01T10:00:00Z')); // false (end is exclusive)
+```
+
+### Merging overlapping slots
+
+```ts
+import { mergeSlots } from 'timeslottr';
+
+const merged = mergeSlots([slotA, slotB, slotC]);
+// Sorts by start time, merges any overlapping or adjacent slots
+```
+
+### Finding gaps (free time)
+
+```ts
+import { findGaps } from 'timeslottr';
+
+const free = findGaps(bookedSlots, {
+  start: new Date('2024-01-01T09:00:00Z'),
+  end: new Date('2024-01-01T17:00:00Z')
+});
+// Returns unbooked time slots within the range
+```
+
+### JSON serialization
+
+`Date` objects don't survive `JSON.stringify` → `JSON.parse` round-trips. Use the built-in helpers:
+
+```ts
+import { timeslotToJSON, timeslotFromJSON } from 'timeslottr';
+
+const json = timeslotToJSON(slot);
+// { start: "2024-01-01T09:00:00.000Z", end: "2024-01-01T10:00:00.000Z", metadata: { ... } }
+
+const restored = timeslotFromJSON(json);
+// Timeslot with proper Date instances — validates dates and start < end
+```
+
+### Multi-day scheduling
+
+`generateDailyTimeslots` applies your configuration to each day within a date range:
+
+```ts
+import { generateDailyTimeslots } from 'timeslottr';
+
+const slots = generateDailyTimeslots(
+  { start: '2024-01-01', end: '2024-01-08' },
+  {
+    range: { start: '09:00', end: '17:00' },
+    slotDurationMinutes: 60,
+    timezone: 'America/New_York',
+    maxDays: 365, // optional safety limit (default: 10,000)
+  }
+);
+```
 
 ## Development
 

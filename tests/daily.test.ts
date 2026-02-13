@@ -92,4 +92,17 @@ describe('generateDailyTimeslots', () => {
         )
     }).toThrow(/exceeded maximum day limit/);
   });
+
+  it('respects custom maxDays', () => {
+    expect(() => {
+        generateDailyTimeslots(
+            { start: '2024-01-01', end: '2024-12-31' },
+            {
+                range: { start: '09:00', end: '10:00' },
+                slotDurationMinutes: 60,
+                maxDays: 30
+            }
+        )
+    }).toThrow(/exceeded maximum day limit \(30\)/);
+  });
 });
