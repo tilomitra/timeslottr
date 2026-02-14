@@ -51,7 +51,7 @@ export function Playground() {
 
   return (
     <div className="grid gap-12 lg:grid-cols-[1fr,1.5fr] items-start">
-      <div className="space-y-6 lg:sticky lg:top-24">
+      <div className="space-y-6">
         <ConfigForm config={config} onChange={setConfig} />
       </div>
       <div className="space-y-8">
