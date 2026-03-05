@@ -13,7 +13,7 @@ import { resolveRange, type BoundaryContext } from './internal/boundaries.js';
  */
 const DEFAULT_MAX_DAYS = 10_000;
 
-enum Weekday {
+export enum Weekday {
   SUN, // js Date.getDay starts with sunday
   MON,
   TUE,
@@ -23,7 +23,7 @@ enum Weekday {
   SAT,
 };
 
-type WeekdayTimeslotRangeInput = Map<Weekday, TimeslotRangeInput | null>;
+export type WeekdayTimeslotRangeInput = Map<Weekday, TimeslotRangeInput | null>;
 
 export interface DailyTimeslotConfig
   extends Omit<TimeslotGenerationConfig, 'day' | 'range'> {
