@@ -125,7 +125,6 @@ describe('generateDailyTimeslots', () => {
         timezone: 'America/New_York'
       }
     );
-    console.log(slots)
     expect(slots).toHaveLength(3);
     expect(slots[0].start).toEqual(
       makeDateFromCalendarAndTime(
