@@ -1,4 +1,9 @@
-import type { Timeslot, TimeslotGenerationConfig, TimeslotRangeInput } from './types.js';
+import type { 
+  Timeslot, 
+  TimeslotGenerationConfig, 
+  TimeslotRangeInput, 
+  TimeslotBoundaryInput
+} from './types.js';
 import { generateTimeslots } from './generate-timeslots.js';
 import { resolveRange, type BoundaryContext } from './internal/boundaries.js';
 
@@ -8,9 +13,21 @@ import { resolveRange, type BoundaryContext } from './internal/boundaries.js';
  */
 const DEFAULT_MAX_DAYS = 10_000;
 
+enum Weekday {
+  SUN, // js Date.getDay starts with sunday
+  MON,
+  TUE,
+  WED,
+  THU,
+  FRI,
+  SAT,
+};
+
+type WeekdayTimeslotRangeInput = Map<Weekday, TimeslotRangeInput | null>;
+
 export interface DailyTimeslotConfig
   extends Omit<TimeslotGenerationConfig, 'day' | 'range'> {
-  range: TimeslotRangeInput;
+  range: TimeslotRangeInput | WeekdayTimeslotRangeInput;
   /** Hard cap on the number of calendar days to iterate. Defaults to 10 000. */
   maxDays?: number;
 }
@@ -32,6 +49,8 @@ export function generateDailyTimeslots(
     throw new RangeError('maxDays must be a positive number');
   }
 
+  const { range: configRange, maxDays: _, ...baseConfig } = config;
+
   const results: Timeslot[] = [];
   let daysCount = 0;
 
@@ -45,14 +64,26 @@ export function generateDailyTimeslots(
       );
     }
 
-    const daySlots = generateTimeslots({
-      ...config,
-      day: new Date(iterator),
-    });
+    const day = new Date(iterator);
 
-    for (const slot of daySlots) {
-      if (slot.start >= start && slot.end <= end) {
-        results.push(slot);
+    let currentRange: TimeslotRangeInput | null = null;
+    if (configRange instanceof Map) {
+      currentRange = configRange.get(day.getDay()) ?? null;
+    } else {
+      currentRange = configRange;
+    }
+
+    if (currentRange) {
+      const daySlots = generateTimeslots({
+        ...baseConfig,
+        range: currentRange,
+        day,
+      });
+
+      for (const slot of daySlots) {
+        if (slot.start >= start && slot.end <= end) {
+          results.push(slot);
+        }
       }
     }
 
