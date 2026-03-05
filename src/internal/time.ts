@@ -131,6 +131,15 @@ export function calendarFromDateOnlyString(value: string): CalendarDate {
   return { year, month, day };
 }
 
+export function addDaysToCalendar(date: CalendarDate, days: number): CalendarDate {
+  const nextDate = new Date(Date.UTC(date.year, date.month - 1, date.day + days));
+  return {
+    year: nextDate.getUTCFullYear(),
+    month: nextDate.getUTCMonth() + 1,
+    day: nextDate.getUTCDate()
+  };
+}
+
 export function calendarFromDateValue(value: DateValue, timeZone?: string): CalendarDate {
   if (isDate(value)) {
     return toCalendarDateFromInstant(new Date(value.getTime()), timeZone);

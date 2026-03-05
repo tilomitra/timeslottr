@@ -1,5 +1,12 @@
 import { describe, it, expect } from 'vitest';
-import { generateDailyTimeslots } from '../src/generate-daily-timeslots.js';
+import {
+  makeDateFromCalendarAndTime
+} from '../src/internal/time';
+import {
+  generateDailyTimeslots,
+  Weekday,
+  WeekdayTimeslotRangeInput,
+} from '../src/generate-daily-timeslots.js';
 
 describe('generateDailyTimeslots', () => {
   it('generates slots across multiple days', () => {
@@ -104,5 +111,41 @@ describe('generateDailyTimeslots', () => {
             }
         )
     }).toThrow(/exceeded maximum day limit \(30\)/);
+  });
+
+  it('respects varying ranges per weekday', () => {
+    const ranges: WeekdayTimeslotRangeInput = new Map();
+    ranges.set(Weekday.WED, { start: '9:00', end: '10:00' });
+    ranges.set(Weekday.THU, { start: '9:00', end: '11:00' });
+    const slots = generateDailyTimeslots(
+      { start: '2025-01-01', end: '2025-01-05' },
+      {
+        range: ranges,
+        slotDurationMinutes: 60,
+        timezone: 'America/New_York'
+      }
+    );
+    expect(slots).toHaveLength(3);
+    expect(slots[0].start).toEqual(
+      makeDateFromCalendarAndTime(
+        { year: 2025, month: 1, day: 1 },
+        { hour: 9, minute: 0, second: 0 },
+        'America/New_York'
+      )
+    )
+    expect(slots[1].start).toEqual(
+      makeDateFromCalendarAndTime(
+        { year: 2025, month: 1, day: 2 },
+        { hour: 9, minute: 0, second: 0 },
+        'America/New_York'
+      )
+    )
+    expect(slots[2].start).toEqual(
+      makeDateFromCalendarAndTime(
+        { year: 2025, month: 1, day: 2 },
+        { hour: 10, minute: 0, second: 0 },
+        'America/New_York'
+      )
+    )
   });
 });
