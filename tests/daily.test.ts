@@ -6,6 +6,7 @@ import {
   generateDailyTimeslots,
   Weekday,
   WeekdayTimeslotRangeInput,
+  DateTimeslotRangeInput,
 } from '../src/generate-daily-timeslots.js';
 
 describe('generateDailyTimeslots', () => {
@@ -141,6 +142,45 @@ describe('generateDailyTimeslots', () => {
       )
     )
     expect(slots[2].start).toEqual(
+      makeDateFromCalendarAndTime(
+        { year: 2025, month: 1, day: 2 },
+        { hour: 10, minute: 0, second: 0 },
+        'America/New_York'
+      )
+    )
+  });
+
+  it('date specific exclusion windows work', () => {
+    const ranges: WeekdayTimeslotRangeInput = new Map();
+    const excludedWindows: DateTimeslotRangeInput = new Map();
+
+    ranges.set(Weekday.WED, { start: '9:00', end: '10:00' });
+    ranges.set(Weekday.THU, { start: '9:00', end: '11:00' });
+
+    excludedWindows.set('2025-01-02', [{
+      start: '9:30',
+      end: '10:00',
+    }]);
+
+    const slots = generateDailyTimeslots(
+      { start: '2025-01-01', end: '2025-01-05' },
+      {
+        range: ranges,
+        slotDurationMinutes: 60,
+        timezone: 'America/New_York',
+        excludedWindows: excludedWindows,
+      }
+    );
+
+    expect(slots).toHaveLength(2);
+    expect(slots[0].start).toEqual(
+      makeDateFromCalendarAndTime(
+        { year: 2025, month: 1, day: 1 },
+        { hour: 9, minute: 0, second: 0 },
+        'America/New_York'
+      )
+    )
+    expect(slots[1].start).toEqual(
       makeDateFromCalendarAndTime(
         { year: 2025, month: 1, day: 2 },
         { hour: 10, minute: 0, second: 0 },
