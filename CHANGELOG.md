@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.3.0] - 2026-03-09
+## [0.4.0] - 2026-03-09
 
 ### Added
 - Per-weekday schedule support for `generateDailyTimeslots` — pass a `Map<Weekday, TimeslotRangeInput>` as the `range` to define different time windows per day of the week.
@@ -40,7 +40,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ESM and CommonJS dual-package support.
 - TypeScript type definitions included in the package.
 
-[Unreleased]: https://github.com/tilomitra/timeslottr/compare/v0.3.0...HEAD
-[0.3.0]: https://github.com/tilomitra/timeslottr/compare/v0.2.0...v0.3.0
+[Unreleased]: https://github.com/tilomitra/timeslottr/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/tilomitra/timeslottr/compare/v0.2.0...v0.4.0
 [0.2.0]: https://github.com/tilomitra/timeslottr/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/tilomitra/timeslottr/releases/tag/v0.1.0
