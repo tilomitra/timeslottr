@@ -9,3 +9,5 @@ coverage
 .idea
 .vscode
 AGENTS.md
+.claude/
+index.txt
