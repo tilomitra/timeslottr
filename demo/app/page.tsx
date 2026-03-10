@@ -19,12 +19,18 @@ const slots = generateTimeslots({
 `;
 
   const multiDayCode = `
-import { generateDailyTimeslots } from 'timeslottr';
+import { generateDailyTimeslots, Weekday } from 'timeslottr';
 
 const slots = generateDailyTimeslots(
-  { start: '2024-01-01', end: '2024-01-08' },
+  { start: '2024-01-01', end: '2024-01-14' },
   {
-    range: { start: '09:00', end: '17:00' },
+    range: new Map([
+      [Weekday.MON, { start: '09:00', end: '17:00' }],
+      [Weekday.TUE, { start: '09:00', end: '17:00' }],
+      [Weekday.WED, { start: '09:00', end: '12:00' }],
+      [Weekday.THU, { start: '09:00', end: '17:00' }],
+      [Weekday.FRI, { start: '10:00', end: '16:00' }],
+    ]),
     slotDurationMinutes: 60,
     timezone: 'America/New_York'
   }
@@ -61,7 +67,7 @@ const slots = generateDailyTimeslots(
           </div>
           <div className="grid gap-8 md:grid-cols-2">
             <CodeBlock title="Single Day Schedule" code={singleDayCode} />
-            <CodeBlock title="Multi-Day Schedule" code={multiDayCode} />
+            <CodeBlock title="Per-Weekday Schedule" code={multiDayCode} />
           </div>
         </section>
 
