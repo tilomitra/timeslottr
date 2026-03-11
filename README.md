@@ -10,7 +10,7 @@ Zero dependencies. TypeScript-first. Works everywhere.
 [![license](https://img.shields.io/npm/l/timeslottr)](https://www.npmjs.com/package/timeslottr)
 [![downloads](https://img.shields.io/npm/dm/timeslottr)](https://www.npmjs.com/package/timeslottr)
 
-[Live Demo](https://timeslottr.vercel.app/)
+[Live Demo](https://timeslottr.vercel.app/) | [API](https://timeslottr.vercel.app/#api)
 
 </div>
 
