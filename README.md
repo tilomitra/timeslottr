@@ -1,6 +1,16 @@
+<div align="center">
+
 # timeslottr
 
-A TypeScript library for generating time slots and checking if they overlap. Works with both ESM and CommonJS modules.
+Generate time slots with ease.<br>
+Zero dependencies. TypeScript-first. Works everywhere.
+
+[![npm version](https://img.shields.io/npm/v/timeslottr)](https://www.npmjs.com/package/timeslottr)
+[![gzip size](https://img.shields.io/bundlephobia/minzip/timeslottr)](https://bundlephobia.com/package/timeslottr)
+[![license](https://img.shields.io/npm/l/timeslottr)](https://www.npmjs.com/package/timeslottr)
+[![downloads](https://img.shields.io/npm/dm/timeslottr)](https://www.npmjs.com/package/timeslottr)
+
+</div>
 
 ## Live demo
 
