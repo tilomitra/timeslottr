@@ -10,18 +10,9 @@ Zero dependencies. TypeScript-first. Works everywhere.
 [![license](https://img.shields.io/npm/l/timeslottr)](https://www.npmjs.com/package/timeslottr)
 [![downloads](https://img.shields.io/npm/dm/timeslottr)](https://www.npmjs.com/package/timeslottr)
 
+[Live Demo](https://timeslottr.vercel.app/)
+
 </div>
-
-## Live demo
-
-Try the interactive playground at [timeslottr.vercel.app](https://timeslottr.vercel.app/) to explore configuration options and see generated timeslots visualized in real time.
-
-You can also run it locally:
-
-1. Navigate to the demo directory: `cd demo`
-2. Install dependencies: `npm install`
-3. Start the development server: `npm run dev`
-4. Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ## Key features
 
