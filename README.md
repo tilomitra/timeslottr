@@ -105,6 +105,36 @@ const slots = generateDailyTimeslots(
 );
 ```
 
+### Per-day excluded windows
+
+You can define excludedWindows separately for defined dates by passing a `Map<CalendarDate | string, TimeslotRangeInput[]>` as the `excludedWindows`. Corresponding excludedWindows will then only be applied to the days given as keys to the map.
+
+```ts
+import { generateDailyTimeslots } from 'timeslottr';
+import type { DateTimeslotRangeInput } from 'timeslottr';
+
+const excludedWindows: DateTimeslotRangeInput = new Map([
+  ['2024-01-01', [{ start: '10:00', end: '11:00' }]], // meeting, but no lunch break
+  ['2024-01-02', [{ start: '12:00', end: '13:00' }]], // lunch break, no meetings
+  ['2024-01-03', 
+    [
+      { start: '12:00', end: '13:00' },               // lunch break and meeting
+      { start: '14:00', end: '15:00' },
+    ]
+  ],
+]);                                                   // nothing planned on 2024-01-04
+
+const slots = generateDailyTimeslots(
+  { start: '2024-01-01', end: '2024-01-04' },
+  {
+    range: { start: '09:00', end: '17:00' },
+    slotDurationMinutes: 60,
+    timezone: 'America/New_York',
+    excludedWindows: excludedWindows,
+  }
+);
+```
+
 ## Configuration
 
 | Option | Type | Description |
@@ -114,7 +144,7 @@ const slots = generateDailyTimeslots(
 | `slotDurationMinutes` | `number` | Length of each primary slot. Must be positive. |
 | `slotIntervalMinutes` | `number` | Step between slot starts. Defaults to `slotDurationMinutes`, enabling overlaps or gaps when customised. |
 | `bufferBeforeMinutes` / `bufferAfterMinutes` | `number` | Trim the usable window by applying leading/trailing buffers. |
-| `excludedWindows` | `TimeslotRangeInput[]` | Sub-ranges to omit (breaks, blackout periods). Overlapping windows are merged. |
+| `excludedWindows` | `TimeslotRangeInput[] \| DateTimeslotRangeInput` | Sub-ranges to omit (breaks, blackout periods). Overlapping windows are merged. By default applied to each day. If using `DateTimeslotRangeInput` the keys determine the day corresponding excludedWindows are applied to. |
 | `timezone` | `string` | IANA time zone used when interpreting date-only or time-only inputs (`America/New_York`, `UTC`, …). |
 | `alignment` | `'start' \| 'end' \| 'center'` | Controls how leftover time is handled. `start` truncates at the end, `end` aligns slots backwards from the range end, `center` distributes leftover time evenly. |
 | `minimumSlotDurationMinutes` | `number` | Minimum allowable length for partial edge slots. Defaults to `slotDurationMinutes`. |
