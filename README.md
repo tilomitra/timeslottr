@@ -1,17 +1,18 @@
+<div align="center">
+
 # timeslottr
 
-A TypeScript library for generating time slots and checking if they overlap. Works with both ESM and CommonJS modules.
+Generate time slots with ease.<br>
+Zero dependencies. TypeScript-first. Works everywhere.
 
-## Live demo
+[![npm version](https://img.shields.io/npm/v/timeslottr)](https://www.npmjs.com/package/timeslottr)
+[![gzip size](https://img.shields.io/bundlephobia/minzip/timeslottr)](https://bundlephobia.com/package/timeslottr)
+[![license](https://img.shields.io/npm/l/timeslottr)](https://www.npmjs.com/package/timeslottr)
+[![downloads](https://img.shields.io/npm/dm/timeslottr)](https://www.npmjs.com/package/timeslottr)
 
-Try the interactive playground at [timeslottr.vercel.app](https://timeslottr.vercel.app/) to explore configuration options and see generated timeslots visualized in real time.
+[Live Demo](https://timeslottr.vercel.app/) | [API](https://timeslottr.vercel.app/#api)
 
-You can also run it locally:
-
-1. Navigate to the demo directory: `cd demo`
-2. Install dependencies: `npm install`
-3. Start the development server: `npm run dev`
-4. Open [http://localhost:3000](http://localhost:3000) in your browser.
+</div>
 
 ## Key features
 
@@ -77,11 +78,38 @@ const slots = generateDailyTimeslots(
 );
 ```
 
+### Per-weekday schedules
+
+You can define different time ranges for each day of the week by passing a `Map<Weekday, TimeslotRangeInput>` as the `range`. Days not included in the map are skipped. Set a weekday to `null` to explicitly exclude it.
+
+```ts
+import { generateDailyTimeslots, Weekday } from 'timeslottr';
+import type { WeekdayTimeslotRangeInput } from 'timeslottr';
+
+const weekdayRanges: WeekdayTimeslotRangeInput = new Map([
+  [Weekday.MON, { start: '09:00', end: '17:00' }],
+  [Weekday.TUE, { start: '09:00', end: '17:00' }],
+  [Weekday.WED, { start: '09:00', end: '12:00' }], // half day
+  [Weekday.THU, { start: '09:00', end: '17:00' }],
+  [Weekday.FRI, { start: '10:00', end: '16:00' }], // late start, early finish
+  // SAT and SUN omitted — no slots generated on weekends
+]);
+
+const slots = generateDailyTimeslots(
+  { start: '2024-01-01', end: '2024-01-14' },
+  {
+    range: weekdayRanges,
+    slotDurationMinutes: 60,
+    timezone: 'America/New_York',
+  }
+);
+```
+
 ## Configuration
 
 | Option | Type | Description |
 | --- | --- | --- |
-| `range` | `{ start, end }` | Required boundaries for the generation window. Each boundary accepts a `Date`, an ISO-like string, a time-only string (`"09:00"`), or `{ date, time }`. Time-only inputs need a `day` default or an inline `date`. |
+| `range` | `{ start, end }` or `Map<Weekday, { start, end } \| null>` | Required boundaries for the generation window. Each boundary accepts a `Date`, an ISO-like string, a time-only string (`"09:00"`), or `{ date, time }`. Time-only inputs need a `day` default or an inline `date`. For `generateDailyTimeslots`, you can pass a `Map` keyed by `Weekday` to define per-weekday schedules; omitted days produce no slots. |
 | `day` | `string \| Date` | Default calendar day when `range`/`excludedWindows` use time-only strings. |
 | `slotDurationMinutes` | `number` | Length of each primary slot. Must be positive. |
 | `slotIntervalMinutes` | `number` | Step between slot starts. Defaults to `slotDurationMinutes`, enabling overlaps or gaps when customised. |
@@ -176,11 +204,12 @@ const restored = timeslotFromJSON(json);
 
 ### Multi-day scheduling
 
-`generateDailyTimeslots` applies your configuration to each day within a date range:
+`generateDailyTimeslots` applies your configuration to each day within a date range. The `range` can be a single `TimeslotRangeInput` (same schedule every day) or a `Map<Weekday, TimeslotRangeInput | null>` for per-weekday schedules:
 
 ```ts
-import { generateDailyTimeslots } from 'timeslottr';
+import { generateDailyTimeslots, Weekday } from 'timeslottr';
 
+// Same schedule every day
 const slots = generateDailyTimeslots(
   { start: '2024-01-01', end: '2024-01-08' },
   {
@@ -190,7 +219,23 @@ const slots = generateDailyTimeslots(
     maxDays: 365, // optional safety limit (default: 10,000)
   }
 );
+
+// Different schedule per weekday
+const weekdaySlots = generateDailyTimeslots(
+  { start: '2024-01-01', end: '2024-01-08' },
+  {
+    range: new Map([
+      [Weekday.MON, { start: '09:00', end: '17:00' }],
+      [Weekday.WED, { start: '09:00', end: '12:00' }],
+      [Weekday.FRI, { start: '10:00', end: '16:00' }],
+    ]),
+    slotDurationMinutes: 60,
+    timezone: 'America/New_York',
+  }
+);
 ```
+
+The `Weekday` enum values are: `SUN` (0), `MON` (1), `TUE` (2), `WED` (3), `THU` (4), `FRI` (5), `SAT` (6).
 
 ## Development
 

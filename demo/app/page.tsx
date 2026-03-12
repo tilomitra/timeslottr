@@ -2,6 +2,7 @@ import { Header } from "@/components/header";
 import { Playground } from "@/components/playground/playground";
 import { CodeBlock } from "@/components/code-block";
 import { InstallCommand } from "@/components/install-command";
+import { ApiReference } from "@/components/api-reference";
 
 export default function Home() {
   const singleDayCode = `
@@ -19,12 +20,18 @@ const slots = generateTimeslots({
 `;
 
   const multiDayCode = `
-import { generateDailyTimeslots } from 'timeslottr';
+import { generateDailyTimeslots, Weekday } from 'timeslottr';
 
 const slots = generateDailyTimeslots(
-  { start: '2024-01-01', end: '2024-01-08' },
+  { start: '2024-01-01', end: '2024-01-14' },
   {
-    range: { start: '09:00', end: '17:00' },
+    range: new Map([
+      [Weekday.MON, { start: '09:00', end: '17:00' }],
+      [Weekday.TUE, { start: '09:00', end: '17:00' }],
+      [Weekday.WED, { start: '09:00', end: '12:00' }],
+      [Weekday.THU, { start: '09:00', end: '17:00' }],
+      [Weekday.FRI, { start: '10:00', end: '16:00' }],
+    ]),
     slotDurationMinutes: 60,
     timezone: 'America/New_York'
   }
@@ -35,7 +42,7 @@ const slots = generateDailyTimeslots(
     <div className="relative min-h-screen flex flex-col">
       <Header />
       <main className="flex-1 px-4 md:px-0">
-        <section className="space-y-6 pb-8 pt-6 md:pb-12 md:pt-10 lg:py-32">
+        <section id="overview" className="space-y-6 pb-8 pt-6 md:pb-12 md:pt-10 lg:py-32">
           <div className="container mx-auto flex max-w-[64rem] flex-col items-center gap-4 text-center">
             <h1 className="font-sans text-4xl font-semibold tracking-tight sm:text-5xl md:text-6xl lg:text-7xl">
               Flexible Time Slot Generation
@@ -50,7 +57,7 @@ const slots = generateDailyTimeslots(
           </div>
         </section>
 
-        <section className="container mx-auto max-w-screen-xl pb-8 md:pb-12 lg:pb-24">
+        <section id="examples" className="container mx-auto max-w-screen-xl pb-8 md:pb-12 lg:pb-24 scroll-mt-20">
           <div className="mx-auto flex flex-col items-center space-y-4 text-center mb-16">
               <h2 className="font-semibold text-3xl leading-[1.1] tracking-tight sm:text-3xl md:text-4xl">
                 Effortless setup
@@ -61,11 +68,11 @@ const slots = generateDailyTimeslots(
           </div>
           <div className="grid gap-8 md:grid-cols-2">
             <CodeBlock title="Single Day Schedule" code={singleDayCode} />
-            <CodeBlock title="Multi-Day Schedule" code={multiDayCode} />
+            <CodeBlock title="Per-Weekday Schedule" code={multiDayCode} />
           </div>
         </section>
 
-        <section className="container mx-auto max-w-screen-xl pb-8 md:pb-12 lg:pb-24">
+        <section id="playground" className="container mx-auto max-w-screen-xl pb-8 md:pb-12 lg:pb-24 scroll-mt-20">
           <div className="mx-auto flex flex-col items-center space-y-4 text-center mb-16">
              <div className="rounded-2xl bg-muted px-3 py-1 text-sm font-medium">
                 Interactive Demo
@@ -78,6 +85,21 @@ const slots = generateDailyTimeslots(
              </p>
           </div>
           <Playground />
+        </section>
+
+        <section id="api" className="container mx-auto max-w-screen-xl pb-8 md:pb-12 lg:pb-24 scroll-mt-20">
+          <div className="mx-auto flex flex-col items-center space-y-4 text-center mb-16">
+             <div className="rounded-2xl bg-muted px-3 py-1 text-sm font-medium">
+                Reference
+             </div>
+             <h2 className="font-semibold text-3xl leading-[1.1] tracking-tight sm:text-3xl md:text-4xl">
+                API
+             </h2>
+             <p className="max-w-[42rem] leading-relaxed text-muted-foreground sm:text-lg sm:leading-7">
+                Complete reference for all exported functions, configuration options, and types.
+             </p>
+          </div>
+          <ApiReference />
         </section>
       </main>
       <footer className="py-6 md:px-8 md:py-0 border-t">

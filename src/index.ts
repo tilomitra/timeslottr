@@ -1,6 +1,6 @@
 export { generateTimeslots } from './generate-timeslots.js';
-export { generateDailyTimeslots } from './generate-daily-timeslots.js';
-export type { WeekdayTimeslotRangeInput, DateTimeslotRangeInput, DailyTimeslotConfig } from './generate-daily-timeslots.js';
+export { generateDailyTimeslots, Weekday } from './generate-daily-timeslots.js';
+export type { DailyTimeslotConfig, DateTimeslotRangeInput, WeekdayTimeslotRangeInput } from './generate-daily-timeslots.js';
 export { createTimeslot, overlaps, contains, mergeSlots, findGaps, timeslotToJSON, timeslotFromJSON } from './timeslot.js';
 export type { TimeslotJSON } from './timeslot.js';
 

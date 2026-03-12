@@ -60,6 +60,10 @@ export function generateDailyTimeslots(
   const start = startResolved.instant;
   const end = endResolved.instant;
 
+  if (end.getTime() <= start.getTime()) {
+    throw new RangeError('Timeslot range end must be after its start');
+  }
+
   const maxDays = config.maxDays ?? DEFAULT_MAX_DAYS;
   if (maxDays <= 0) {
     throw new RangeError('maxDays must be a positive number');

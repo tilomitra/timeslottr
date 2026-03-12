@@ -1,14 +1,32 @@
 {
   "name": "timeslottr",
-  "version": "0.2.0",
-  "description": "Utility functions for working with timeslots.",
+  "version": "0.4.0",
+  "description": "A zero-dependency TypeScript library for generating time slots with timezone support, buffers, exclusions, and overlap detection.",
   "keywords": [
     "timeslot",
+    "timeslots",
+    "scheduling",
     "scheduler",
-    "date"
+    "time",
+    "date",
+    "timezone",
+    "availability",
+    "calendar",
+    "appointments",
+    "booking",
+    "slots"
   ],
   "license": "MIT",
   "author": "Tilo Mitra <tilomitra@gmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tilomitra/timeslottr.git"
+  },
+  "homepage": "https://timeslottr.vercel.app",
+  "bugs": {
+    "url": "https://github.com/tilomitra/timeslottr/issues"
+  },
+  "sideEffects": false,
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -30,7 +48,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest",
     "coverage": "vitest run --coverage",
-    "prepare": "npm run build"
+    "prepare": "command -v tsup >/dev/null 2>&1 && npm run build || true"
   },
   "devDependencies": {
     "@types/node": "^20.12.7",
