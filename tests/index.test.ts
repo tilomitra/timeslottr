@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createTimeslot, generateTimeslots, overlaps } from '../src/index.ts';
+import { createTimeslot, generateTimeslots, overlaps } from '../src/index.js';
 
 describe('createTimeslot', () => {
   it('creates a timeslot copy of the provided dates', () => {

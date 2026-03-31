@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { generateTimeslots } from '../src/index.ts';
+import { generateTimeslots } from '../src/index.js';
 
 describe('slots.ts branch coverage', () => {
   describe('end alignment', () => {

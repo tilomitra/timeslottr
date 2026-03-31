@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   makeDateFromCalendarAndTime
-} from '../src/internal/time';
+} from '../src/internal/time.js';
 import {
   generateDailyTimeslots,
   Weekday,

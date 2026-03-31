@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { generateTimeslots } from '../src/index.ts';
-import { generateDailyTimeslots } from '../src/index.ts';
+import { generateTimeslots } from '../src/index.js';
+import { generateDailyTimeslots } from '../src/index.js';
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 

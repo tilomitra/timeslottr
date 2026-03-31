@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-03-30
+
+### Added
+- CI workflow: tests run on Node 18/20/22 for every push and PR.
+- Publish workflow: auto-publishes to npm with provenance on GitHub release.
+
+### Changed
+- Promoted to v1.0.0 — public API is now stable.
+
 ## [0.4.0] - 2026-03-09
 
 ### Added
@@ -40,7 +49,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ESM and CommonJS dual-package support.
 - TypeScript type definitions included in the package.
 
-[Unreleased]: https://github.com/tilomitra/timeslottr/compare/v0.4.0...HEAD
+[Unreleased]: https://github.com/tilomitra/timeslottr/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/tilomitra/timeslottr/compare/v0.4.0...v1.0.0
 [0.4.0]: https://github.com/tilomitra/timeslottr/compare/v0.2.0...v0.4.0
 [0.2.0]: https://github.com/tilomitra/timeslottr/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/tilomitra/timeslottr/releases/tag/v0.1.0
