@@ -11,10 +11,24 @@ function InlineCode({ children }: { children: React.ReactNode }) {
   );
 }
 
+function useDarkMode() {
+  const [isDark, setIsDark] = React.useState(false);
+  React.useEffect(() => {
+    const html = document.documentElement;
+    const update = () => setIsDark(html.classList.contains("dark"));
+    update();
+    const observer = new MutationObserver(update);
+    observer.observe(html, { attributes: true, attributeFilter: ["class"] });
+    return () => observer.disconnect();
+  }, []);
+  return isDark;
+}
+
 function CodeSnippet({ code, className = "" }: { code: string; className?: string }) {
+  const isDark = useDarkMode();
   return (
     <div className={`rounded-lg border bg-muted/30 overflow-auto ${className}`}>
-      <Highlight theme={themes.vsLight} code={code.trim()} language="typescript">
+      <Highlight theme={isDark ? themes.vsDark : themes.vsLight} code={code.trim()} language="typescript">
         {({ style, tokens, getLineProps, getTokenProps }) => (
           <pre
             style={{ ...style, background: "transparent" }}

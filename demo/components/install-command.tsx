@@ -22,18 +22,18 @@ export function InstallCommand({ command = "npm install timeslottr", className }
     <button
       onClick={handleCopy}
       className={cn(
-        "group flex items-center space-x-2 rounded-full border bg-muted/50 px-6 py-2 font-mono text-base text-muted-foreground transition-colors hover:bg-muted hover:text-foreground active:bg-muted/80",
+        "group flex items-center space-x-2 rounded-lg bg-foreground px-6 py-3 font-mono text-sm text-background transition-all hover:opacity-90 active:opacity-80 shadow-md",
         className
       )}
       title="Click to copy"
     >
-      <Terminal className="h-5 w-5" />
+      <Terminal className="h-4 w-4 opacity-60" />
       <span>{command}</span>
-      <div className="ml-2 flex h-5 w-5 items-center justify-center">
+      <div className="ml-2 flex h-4 w-4 items-center justify-center">
         {copied ? (
-          <Check className="h-4 w-4 text-green-500" />
+          <Check className="h-3.5 w-3.5 text-green-400" />
         ) : (
-          <Copy className="h-4 w-4 opacity-0 transition-opacity group-hover:opacity-50" />
+          <Copy className="h-3.5 w-3.5 opacity-0 transition-opacity group-hover:opacity-60" />
         )}
       </div>
     </button>

@@ -9,15 +9,25 @@ interface CodeBlockProps {
 }
 
 export function CodeBlock({ title, code }: CodeBlockProps) {
-  // We'll stick to a light theme for the snippets to match the overall "light" aesthetic requested earlier.
+  const [isDark, setIsDark] = React.useState(false);
+
+  React.useEffect(() => {
+    const html = document.documentElement;
+    const update = () => setIsDark(html.classList.contains("dark"));
+    update();
+    const observer = new MutationObserver(update);
+    observer.observe(html, { attributes: true, attributeFilter: ["class"] });
+    return () => observer.disconnect();
+  }, []);
+
   return (
-    <div className="rounded-xl border bg-card text-card-foreground shadow-sm h-full flex flex-col overflow-hidden">
-      <div className="p-6 pb-4 border-b bg-muted/10">
-        <h3 className="font-semibold leading-none tracking-tight">{title}</h3>
+    <div className="rounded-xl border bg-card text-card-foreground h-full flex flex-col overflow-hidden">
+      <div className="px-5 py-3 border-b bg-muted/30">
+        <h3 className="text-sm font-medium text-muted-foreground">{title}</h3>
       </div>
-      <div className="flex-1 p-6 overflow-auto bg-muted/30">
+      <div className="flex-1 p-5 overflow-auto">
         <Highlight
-          theme={themes.vsLight}
+          theme={isDark ? themes.vsDark : themes.vsLight}
           code={code.trim()}
           language="typescript"
         >

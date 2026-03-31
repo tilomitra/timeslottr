@@ -4,7 +4,7 @@ import "./globals.css";
 import { cn } from "@/lib/utils";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
-const mono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-mono" });
+const mono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-mono", weight: ["400", "500", "600", "700"] });
 
 export const metadata: Metadata = {
   title: "timeslottr - Flexible Time Slot Generation",
@@ -21,7 +21,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={cn(inter.variable, mono.variable, "min-h-screen bg-background font-sans antialiased selection:bg-gray-200 selection:text-black")}>
+      <body className={cn(inter.variable, mono.variable, "min-h-screen bg-background font-mono antialiased selection:bg-gray-200 selection:text-black")}>
         {children}
       </body>
     </html>
