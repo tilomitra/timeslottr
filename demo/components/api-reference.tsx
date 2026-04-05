@@ -196,13 +196,13 @@ const slots = generateTimeslots({
         <FunctionCard
           id="generateDailyTimeslots"
           signature="generateDailyTimeslots(period: TimeslotRangeInput, config: DailyTimeslotConfig): Timeslot[]"
-          description="Generates time slots across multiple days. Supports per-weekday schedules using a Map of Weekday to time ranges, or a single range applied to every day."
+          description="Generates time slots across multiple days. Supports per-weekday schedules using a Map of Weekday to time ranges, or a single range applied to every day. Also excludedWindows can be defined using a Map of day to an array of time ranges, or a single array of time ranges applied to every day."
         >
           <div className="space-y-4">
             <CodeSnippet
               code={`import { generateDailyTimeslots, Weekday } from 'timeslottr';
 
-// Per-weekday schedule over a 2-week span
+// Per-weekday schedule over a 2-week span + day specific excludedWindows
 const slots = generateDailyTimeslots(
   { start: '2024-03-01', end: '2024-03-14' },
   {
@@ -216,9 +216,15 @@ const slots = generateDailyTimeslots(
     ]),
     slotDurationMinutes: 60,
     timezone: 'America/New_York',
-    excludedWindows: [
-      { start: '12:00', end: '13:00' }
-    ],
+    excludedWindows: new Map([
+      ['2024-03-01', [{ start: '12:00', end: '13:00' }]],
+      ['2024-03-02', [{ start: '09:00', end: '11:00' }]],
+      ['2024-03-08', [
+        { start: '09:00', end: '11:00' },
+        { start: '12:00', end: '13:00' },
+        { start: '15:00', end: '16:00' },
+      ]],
+    ]),
   }
 );`}
             />
