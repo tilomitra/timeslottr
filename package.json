@@ -48,7 +48,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest",
     "coverage": "vitest run --coverage",
-    "prepare": "command -v tsup >/dev/null 2>&1 && npm run build || true"
+    "prepare": "npm run build"
   },
   "devDependencies": {
     "@types/node": "^20.12.7",
