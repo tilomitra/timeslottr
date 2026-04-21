@@ -9,7 +9,21 @@ interface JsonOutputProps {
   data: any;
 }
 
+function useDarkMode() {
+  const [isDark, setIsDark] = React.useState(false);
+  React.useEffect(() => {
+    const html = document.documentElement;
+    const update = () => setIsDark(html.classList.contains("dark"));
+    update();
+    const observer = new MutationObserver(update);
+    observer.observe(html, { attributes: true, attributeFilter: ["class"] });
+    return () => observer.disconnect();
+  }, []);
+  return isDark;
+}
+
 export function JsonOutput({ data }: JsonOutputProps) {
+  const isDark = useDarkMode();
   const [copied, setCopied] = React.useState(false);
 
   const handleCopy = () => {
@@ -36,7 +50,7 @@ export function JsonOutput({ data }: JsonOutputProps) {
       </Button>
       <div className="h-[300px] w-full overflow-auto bg-muted/30 p-4">
         <Highlight
-            theme={themes.vsLight}
+            theme={isDark ? themes.vsDark : themes.vsLight}
             code={jsonString}
             language="json"
         >

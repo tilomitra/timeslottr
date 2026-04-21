@@ -41,75 +41,69 @@ const slots = generateDailyTimeslots(
   return (
     <div className="relative min-h-screen flex flex-col">
       <Header />
-      <main className="flex-1 px-4 md:px-0">
-        <section id="overview" className="space-y-6 pb-8 pt-6 md:pb-12 md:pt-10 lg:py-32">
+      <main className="flex-1 px-6 sm:px-8 lg:px-12">
+        {/* Hero */}
+        <section id="overview" className="pb-12 pt-10 md:pb-16 md:pt-14 lg:pb-20 lg:pt-20">
           <div className="container mx-auto flex max-w-[64rem] flex-col items-center gap-4 text-center">
-            <h1 className="font-sans text-4xl font-semibold tracking-tight sm:text-5xl md:text-6xl lg:text-7xl">
-              Flexible Time Slot Generation
+            <h1 className="font-sans text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl lg:text-6xl">
+              Time slots, handled.
             </h1>
-            <p className="max-w-[42rem] leading-relaxed text-muted-foreground sm:text-xl sm:leading-8">
-              A zero-dependency, timezone-aware library for generating time slots.
-              Handles exclusions, buffers, and alignments.
+            <p className="max-w-[36rem] text-base leading-relaxed text-muted-foreground sm:text-lg">
+              Zero-dependency TypeScript library for generating time slots with timezone support, buffers, and exclusions.
             </p>
-            <div className="space-x-4">
-              <InstallCommand />
-            </div>
+            <InstallCommand />
           </div>
         </section>
 
-        <section id="examples" className="container mx-auto max-w-screen-xl pb-8 md:pb-12 lg:pb-24 scroll-mt-20">
-          <div className="mx-auto flex flex-col items-center space-y-4 text-center mb-16">
-              <h2 className="font-semibold text-3xl leading-[1.1] tracking-tight sm:text-3xl md:text-4xl">
-                Effortless setup
-              </h2>
-              <p className="max-w-[42rem] leading-relaxed text-muted-foreground sm:text-lg sm:leading-7">
-                With a simple declarative API to define and use your schedules.
-              </p>
+        {/* Code Examples */}
+        <section id="examples" className="container mx-auto max-w-screen-xl pb-12 md:pb-16 lg:pb-20 scroll-mt-20">
+          <div className="mx-auto flex max-w-[36rem] flex-col items-center text-center mb-8 md:mb-10">
+            <h2 className="font-bold text-2xl tracking-tight sm:text-3xl">
+              Declarative scheduling
+            </h2>
+            <p className="mt-3 text-sm text-muted-foreground sm:text-base leading-relaxed">
+              Define single-day or multi-day schedules with one function call.
+            </p>
           </div>
-          <div className="grid gap-8 md:grid-cols-2">
-            <CodeBlock title="Single Day Schedule" code={singleDayCode} />
-            <CodeBlock title="Per-Weekday Schedule" code={multiDayCode} />
+          <div className="grid gap-6 md:grid-cols-2">
+            <CodeBlock title="Single Day" code={singleDayCode} />
+            <CodeBlock title="Per-Weekday" code={multiDayCode} />
           </div>
         </section>
 
-        <section id="playground" className="container mx-auto max-w-screen-xl pb-8 md:pb-12 lg:pb-24 scroll-mt-20">
-          <div className="mx-auto flex flex-col items-center space-y-4 text-center mb-16">
-             <div className="rounded-2xl bg-muted px-3 py-1 text-sm font-medium">
-                Interactive Demo
-             </div>
-             <h2 className="font-semibold text-3xl leading-[1.1] tracking-tight sm:text-3xl md:text-4xl">
-                See it in action
-             </h2>
-             <p className="max-w-[42rem] leading-relaxed text-muted-foreground sm:text-lg sm:leading-7">
-                Configure your schedule rules on the left and see the generated slots instantly on the right.
-             </p>
+        {/* Playground */}
+        <section id="playground" className="container mx-auto max-w-screen-xl pb-12 md:pb-16 lg:pb-20 scroll-mt-20">
+          <div className="mx-auto flex max-w-[36rem] flex-col items-center text-center mb-8 md:mb-10">
+            <h2 className="font-bold text-2xl tracking-tight sm:text-3xl">
+              Try it live
+            </h2>
+            <p className="mt-3 text-sm text-muted-foreground sm:text-base leading-relaxed">
+              Configure schedule rules and see the generated slots instantly.
+            </p>
           </div>
           <Playground />
         </section>
 
-        <section id="api" className="container mx-auto max-w-screen-xl pb-8 md:pb-12 lg:pb-24 scroll-mt-20">
-          <div className="mx-auto flex flex-col items-center space-y-4 text-center mb-16">
-             <div className="rounded-2xl bg-muted px-3 py-1 text-sm font-medium">
-                Reference
-             </div>
-             <h2 className="font-semibold text-3xl leading-[1.1] tracking-tight sm:text-3xl md:text-4xl">
-                API
-             </h2>
-             <p className="max-w-[42rem] leading-relaxed text-muted-foreground sm:text-lg sm:leading-7">
-                Complete reference for all exported functions, configuration options, and types.
-             </p>
+        {/* API Reference */}
+        <section id="api" className="container mx-auto max-w-screen-xl pb-12 md:pb-16 lg:pb-20 scroll-mt-20">
+          <div className="mx-auto flex max-w-[36rem] flex-col items-center text-center mb-8 md:mb-10">
+            <h2 className="font-bold text-2xl tracking-tight sm:text-3xl">
+              API Reference
+            </h2>
+            <p className="mt-3 text-sm text-muted-foreground sm:text-base leading-relaxed">
+              Every exported function, config option, and type.
+            </p>
           </div>
           <ApiReference />
         </section>
       </main>
-      <footer className="py-6 md:px-8 md:py-0 border-t">
-        <div className="container mx-auto flex flex-col items-center justify-between gap-4 md:h-24 md:flex-row">
-          <p className="text-balance text-center text-sm leading-loose text-muted-foreground md:text-left">
-            Built by <a href="https://twitter.com/tilomitra" target="_blank" rel="noreferrer" className="font-medium underline underline-offset-4">Tilo Mitra</a>. The source code is available on <a href="https://github.com/tilomitra/timeslottr" target="_blank" rel="noreferrer" className="font-medium underline underline-offset-4">GitHub</a>.
+
+      <footer className="border-t py-8 md:py-0">
+        <div className="container mx-auto flex flex-col items-center justify-between gap-4 px-4 md:h-20 md:flex-row sm:px-8">
+          <p className="text-sm text-muted-foreground">
+            Built by <a href="https://twitter.com/tilomitra" target="_blank" rel="noreferrer" className="font-medium underline underline-offset-4 hover:text-foreground transition-colors">Tilo Mitra</a>. Source on <a href="https://github.com/tilomitra/timeslottr" target="_blank" rel="noreferrer" className="font-medium underline underline-offset-4 hover:text-foreground transition-colors">GitHub</a>.
           </p>
-          <p className="text-balance text-center text-sm leading-loose text-muted-foreground md:text-left">
-            MIT License
-          </p>
+          <p className="text-sm text-muted-foreground">MIT License</p>
         </div>
       </footer>
     </div>
