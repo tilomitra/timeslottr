@@ -10,7 +10,7 @@ timeslottr has two generators: `generateTimeslots` for a single window, and
 
 ## Single day
 
-The workhorse. Give it a `range`, a `slotDurationMinutes`, and any options:
+Give it a `range`, a `slotDurationMinutes`, and whatever options you need:
 
 ```ts
 import { generateTimeslots } from 'timeslottr'
@@ -20,7 +20,7 @@ const slots = generateTimeslots({
   timezone: 'America/New_York',
   range: { start: '09:00', end: '17:00' },
   slotDurationMinutes: 30,
-  slotIntervalMinutes: 15, // start a new slot every 15 min → overlapping slots
+  slotIntervalMinutes: 15, // start a new slot every 15 min, so slots overlap
   bufferBeforeMinutes: 10, // trim 10 min off the start of the window
   bufferAfterMinutes: 10, // trim 10 min off the end
   excludedWindows: [{ start: '12:00', end: '13:00' }], // lunch
@@ -32,12 +32,12 @@ See [Configuration](/api/configuration) for every option and its default.
 
 ## Overlapping vs. back-to-back slots
 
-`slotIntervalMinutes` is the **step** between slot starts; `slotDurationMinutes`
-is each slot's **length**. Set them equal (the default) for back-to-back slots,
-or set the interval smaller for overlapping ones:
+`slotIntervalMinutes` is the step between slot starts. `slotDurationMinutes` is
+how long each slot lasts. Set them equal (the default) for back-to-back slots, or
+make the interval smaller to overlap them:
 
 ```ts
-// 30-min slots starting every 15 min: 9:00–9:30, 9:15–9:45, 9:30–10:00, …
+// 30-min slots starting every 15 min: 9:00 to 9:30, 9:15 to 9:45, and so on
 generateTimeslots({
   day: '2024-03-15',
   range: { start: '09:00', end: '17:00' },
@@ -82,7 +82,7 @@ const slots = generateDailyTimeslots(
       [Weekday.WED, { start: '09:00', end: '12:00' }],
       [Weekday.THU, { start: '09:00', end: '17:00' }],
       [Weekday.FRI, { start: '10:00', end: '16:00' }],
-      // SAT and SUN omitted → no slots on weekends
+      // SAT and SUN omitted, so no slots on weekends
     ]),
     slotDurationMinutes: 60,
     timezone: 'America/New_York',
@@ -91,7 +91,7 @@ const slots = generateDailyTimeslots(
 )
 ```
 
-`Weekday` is an enum matching `Date.getDay()`: `SUN` (0) … `SAT` (6).
+`Weekday` is an enum that matches `Date.getDay()`, from `SUN` (0) to `SAT` (6).
 
-Ready to factor in who's actually free? Continue to
-[Multi-party Availability](/docs/availability).
+Next, factor in who is actually free. See
+[Multi-party availability](/docs/availability).
