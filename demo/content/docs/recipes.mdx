@@ -47,7 +47,8 @@ generateAvailableTimeslots({
 
 ## Compute free gaps from existing bookings
 
-Already have booked `Timeslot`s and just want the holes? Use `findGaps`.
+If you already have booked `Timeslot`s and want the holes between them, use
+`findGaps`.
 
 ```ts
 import { findGaps, createTimeslot } from 'timeslottr'
@@ -60,21 +61,21 @@ const free = findGaps(booked, {
   start: new Date('2024-03-15T09:00:00Z'),
   end: new Date('2024-03-15T17:00:00Z'),
 })
-// → [09:00–10:00, 11:00–17:00]
+// result: [09:00 to 10:00, 11:00 to 17:00]
 ```
 
 ## Handle daylight-saving days correctly
 
-Pass a `timezone` and use time-only boundaries — DST transitions are resolved for
+Pass a `timezone` and use time-only boundaries. DST transitions are resolved for
 you. See [Core Concepts](/docs/core-concepts#timezones-and-dst).
 
 ```ts
 generateTimeslots({
-  day: '2024-11-03', // US fall-back: the 1–2am hour happens twice
+  day: '2024-11-03', // US fall-back: the 1am to 2am hour happens twice
   timezone: 'America/New_York',
   range: { start: '00:00', end: '06:00' },
   slotDurationMinutes: 30,
-}).length // 14 — seven real hours
+}).length // 14: seven real hours
 ```
 
 ## Send slots over the network

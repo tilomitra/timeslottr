@@ -65,7 +65,7 @@ const slots = generateDailyTimeslots(
 )
 ```
 
-`DailyTimeslotConfig` accepts all single-day options plus `maxDays` — see
+`DailyTimeslotConfig` accepts all single-day options plus `maxDays`. See
 [Configuration](/api/configuration#additional-dailytimeslotconfig-options).
 
 ## `generateAvailableTimeslots`
@@ -91,7 +91,7 @@ const slots = generateAvailableTimeslots({
   // already-booked events on the host's calendar
   busy: [{ start: '12:00', end: '13:00' }],
 
-  // each invitee's busy times — only times where ALL are free survive
+  // each invitee's busy times; only times where all are free survive
   participantsBusy: [
     [{ start: '09:00', end: '10:00' }], // Alice
     [
@@ -102,10 +102,10 @@ const slots = generateAvailableTimeslots({
     ], // Bob
   ],
 })
-// → 30-min slots between 10:00 and 16:00, excluding lunch
+// 30-minute slots between 10:00 and 16:00, with lunch removed
 ```
 
-Busy times accept the same flexible formats as `range` / `excludedWindows`
-(`string | Date | { date, time }`). A fully-booked day yields `[]`; an empty
+Busy times accept the same formats as `range` and `excludedWindows`
+(`string | Date | { date, time }`). A fully booked day returns `[]`. An empty
 `participantsBusy` entry means that person is free for the whole window. See the
-[availability guide](/docs/availability) for the conceptual walkthrough.
+[availability guide](/docs/availability) for the longer walkthrough.
