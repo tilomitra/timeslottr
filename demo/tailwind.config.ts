@@ -5,7 +5,14 @@ const config: Config = {
     "./pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
+    "./content/**/*.{md,mdx}",
   ],
+  // Nextra's theme owns the page chrome and typography. Disable Tailwind's base
+  // reset (preflight) so it doesn't fight Nextra; we only need Tailwind's
+  // utilities, which the Playground and ui/* components consume.
+  corePlugins: {
+    preflight: false,
+  },
   theme: {
     extend: {
       colors: {
@@ -54,7 +61,7 @@ const config: Config = {
           "conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))",
       },
       fontFamily: {
-        sans: ['var(--font-inter)'],
+        sans: ['var(--font-mona)', 'ui-sans-serif', 'system-ui', 'sans-serif'],
         mono: ['var(--font-mono)'],
       },
     },

@@ -1,0 +1,100 @@
+---
+title: Recipes
+description: Task-oriented snippets for common scheduling problems.
+---
+
+# Recipes
+
+Short, copy-pasteable answers to common questions.
+
+## Exclude a lunch break (and other blackout windows)
+
+`excludedWindows` are subtracted from the base range before slotting. Overlapping
+exclusions are merged automatically.
+
+```ts
+import { generateTimeslots } from 'timeslottr'
+
+generateTimeslots({
+  day: '2024-03-15',
+  range: { start: '09:00', end: '17:00' },
+  slotDurationMinutes: 30,
+  excludedWindows: [
+    { start: '12:00', end: '13:00' }, // lunch
+    { start: '15:00', end: '15:15' }, // afternoon break
+  ],
+})
+```
+
+## Find common availability for a team
+
+Give each person's busy intervals; only mutually-free windows produce slots.
+
+```ts
+import { generateAvailableTimeslots } from 'timeslottr'
+
+generateAvailableTimeslots({
+  day: '2024-03-15',
+  timezone: 'America/New_York',
+  range: { start: '09:00', end: '17:00' },
+  slotDurationMinutes: 30,
+  participantsBusy: [
+    [{ start: '09:00', end: '11:00' }], // person A
+    [{ start: '14:00', end: '15:00' }], // person B
+  ],
+})
+```
+
+## Compute free gaps from existing bookings
+
+Already have booked `Timeslot`s and just want the holes? Use `findGaps`.
+
+```ts
+import { findGaps, createTimeslot } from 'timeslottr'
+
+const booked = [
+  createTimeslot(new Date('2024-03-15T10:00:00Z'), new Date('2024-03-15T11:00:00Z')),
+]
+
+const free = findGaps(booked, {
+  start: new Date('2024-03-15T09:00:00Z'),
+  end: new Date('2024-03-15T17:00:00Z'),
+})
+// → [09:00–10:00, 11:00–17:00]
+```
+
+## Handle daylight-saving days correctly
+
+Pass a `timezone` and use time-only boundaries — DST transitions are resolved for
+you. See [Core Concepts](/docs/core-concepts#timezones-and-dst).
+
+```ts
+generateTimeslots({
+  day: '2024-11-03', // US fall-back: the 1–2am hour happens twice
+  timezone: 'America/New_York',
+  range: { start: '00:00', end: '06:00' },
+  slotDurationMinutes: 30,
+}).length // 14 — seven real hours
+```
+
+## Send slots over the network
+
+`Date`s don't survive `JSON.stringify`/`parse`. Convert explicitly:
+
+```ts
+import { timeslotToJSON, timeslotFromJSON } from 'timeslottr'
+
+const wire = slots.map(timeslotToJSON) // ISO strings
+const restored = wire.map(timeslotFromJSON) // back to Date instances
+```
+
+## Cap how many slots you generate
+
+```ts
+generateTimeslots({
+  day: '2024-03-15',
+  range: { start: '09:00', end: '17:00' },
+  slotDurationMinutes: 15,
+  maxSlots: 8, // stop after the first 8
+})
+```

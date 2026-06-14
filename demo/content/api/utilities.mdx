@@ -1,0 +1,140 @@
+---
+title: Utilities
+description: createTimeslot, overlaps, contains, mergeSlots, findGaps, and JSON helpers.
+---
+
+# Utilities
+
+## `createTimeslot`
+
+```ts
+createTimeslot(start: Date, end: Date): Timeslot
+```
+
+Creates a validated `Timeslot`. Throws `TypeError` if either date is invalid, or
+`RangeError` if `end` is not after `start`.
+
+```ts
+import { createTimeslot } from 'timeslottr'
+
+const slot = createTimeslot(
+  new Date('2024-03-15T09:00:00Z'),
+  new Date('2024-03-15T09:30:00Z'),
+)
+```
+
+## `overlaps`
+
+```ts
+overlaps(a: Timeslot, b: Timeslot): boolean
+```
+
+Returns `true` if two timeslots overlap. Uses half-open comparison, so slots that
+merely touch at a boundary do **not** overlap.
+
+```ts
+import { overlaps, createTimeslot } from 'timeslottr'
+
+const a = createTimeslot(new Date('2024-03-15T09:00:00Z'), new Date('2024-03-15T10:00:00Z'))
+const b = createTimeslot(new Date('2024-03-15T09:30:00Z'), new Date('2024-03-15T10:30:00Z'))
+
+overlaps(a, b) // true
+```
+
+## `contains`
+
+```ts
+contains(slot: Timeslot, date: Date): boolean
+```
+
+Returns `true` if a date falls within the slot. Start is inclusive, end exclusive.
+
+```ts
+import { contains, createTimeslot } from 'timeslottr'
+
+const slot = createTimeslot(
+  new Date('2024-03-15T09:00:00Z'),
+  new Date('2024-03-15T10:00:00Z'),
+)
+
+contains(slot, new Date('2024-03-15T09:30:00Z')) // true
+contains(slot, new Date('2024-03-15T10:00:00Z')) // false (end is exclusive)
+```
+
+## `mergeSlots`
+
+```ts
+mergeSlots(slots: Timeslot[]): Timeslot[]
+```
+
+Sorts slots by start time and merges any overlapping or adjacent slots into
+continuous blocks. Merged slots do not carry metadata from the originals.
+
+```ts
+import { mergeSlots, createTimeslot } from 'timeslottr'
+
+const merged = mergeSlots([
+  createTimeslot(new Date('2024-03-15T09:00:00Z'), new Date('2024-03-15T10:00:00Z')),
+  createTimeslot(new Date('2024-03-15T09:30:00Z'), new Date('2024-03-15T11:00:00Z')),
+  createTimeslot(new Date('2024-03-15T13:00:00Z'), new Date('2024-03-15T14:00:00Z')),
+])
+// → [09:00–11:00, 13:00–14:00]
+```
+
+## `findGaps`
+
+```ts
+findGaps(slots: Timeslot[], range: { start: Date; end: Date }): Timeslot[]
+```
+
+Finds the free/unbooked periods within a range, given a list of booked slots.
+
+```ts
+import { findGaps, createTimeslot } from 'timeslottr'
+
+const booked = [
+  createTimeslot(new Date('2024-03-15T09:00:00Z'), new Date('2024-03-15T10:00:00Z')),
+  createTimeslot(new Date('2024-03-15T11:00:00Z'), new Date('2024-03-15T12:00:00Z')),
+]
+
+const gaps = findGaps(booked, {
+  start: new Date('2024-03-15T08:00:00Z'),
+  end: new Date('2024-03-15T13:00:00Z'),
+})
+// → [08:00–09:00, 10:00–11:00, 12:00–13:00]
+```
+
+## `timeslotToJSON`
+
+```ts
+timeslotToJSON(slot: Timeslot): TimeslotJSON
+```
+
+Converts a `Timeslot` to a JSON-safe object with ISO 8601 string dates. Preserves
+metadata if present.
+
+```ts
+import { timeslotToJSON } from 'timeslottr'
+
+const json = timeslotToJSON(slot)
+// { start: "2024-03-15T09:00:00.000Z", end: "2024-03-15T09:30:00.000Z", metadata: { ... } }
+```
+
+## `timeslotFromJSON`
+
+```ts
+timeslotFromJSON(json: TimeslotJSON): Timeslot
+```
+
+Parses a `TimeslotJSON` back into a `Timeslot` with real `Date` instances.
+Validates the dates and the `start < end` constraint.
+
+```ts
+import { timeslotFromJSON } from 'timeslottr'
+
+const slot = timeslotFromJSON({
+  start: '2024-03-15T09:00:00.000Z',
+  end: '2024-03-15T09:30:00.000Z',
+  metadata: { index: 0, durationMinutes: 30 },
+})
+```

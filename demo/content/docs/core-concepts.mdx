@@ -1,0 +1,85 @@
+---
+title: Core Concepts
+description: Half-open intervals, the Timeslot shape, and how timezones and DST are handled.
+---
+
+import { Callout } from 'nextra/components'
+
+# Core Concepts
+
+A little vocabulary goes a long way. Everything in timeslottr is built on three
+ideas: half-open intervals, the `Timeslot` shape, and instant-based time math.
+
+## Half-open intervals `[start, end)`
+
+Every range, slot, exclusion, and availability window is **half-open**: the
+`start` is inclusive and the `end` is exclusive.
+
+```ts
+import { contains, createTimeslot } from 'timeslottr'
+
+const slot = createTimeslot(
+  new Date('2024-01-01T09:00:00Z'),
+  new Date('2024-01-01T10:00:00Z'),
+)
+
+contains(slot, new Date('2024-01-01T09:00:00Z')) // true  (start is inclusive)
+contains(slot, new Date('2024-01-01T10:00:00Z')) // false (end is exclusive)
+```
+
+The practical payoff: **adjacent slots never overlap.** A 9:00–10:00 slot and a
+10:00–11:00 slot share the boundary instant `10:00`, but because the first
+excludes its end, they don't conflict. The same rule governs `overlaps`,
+`subtract`, and `intersect`, so booked time that ends exactly when a slot begins
+doesn't block it.
+
+## The `Timeslot` shape
+
+`generateTimeslots` and friends return `Timeslot[]`:
+
+```ts
+interface Timeslot {
+  start: Date // inclusive
+  end: Date // exclusive
+  metadata?: {
+    index: number // 0-based position in the result
+    durationMinutes: number
+    label?: string // from labelFormatter, if provided
+  }
+}
+```
+
+`start`/`end` are real `Date` instants (UTC under the hood). To send them over
+the wire, use [`timeslotToJSON` / `timeslotFromJSON`](/api/utilities) — raw
+`JSON.stringify` won't round-trip `Date` objects back into `Date`s.
+
+## Timezones and DST
+
+Boundaries can be given as time-only strings (`'09:00'`), full ISO strings,
+`Date`s, or `{ date, time }` objects. When you pass a `timezone` (any IANA id
+like `'America/New_York'`), time-only boundaries are resolved **in that zone**
+and converted to the correct UTC instant — using the platform `Intl` APIs, with
+no date library.
+
+This means daylight-saving transitions are handled correctly. On a spring-forward
+day the 2:00–3:00 wall-clock hour doesn't exist, so a 00:00–06:00 range yields
+the right number of real slots:
+
+```ts
+const slots = generateTimeslots({
+  day: '2024-03-10', // US spring-forward
+  timezone: 'America/New_York',
+  range: { start: '00:00', end: '06:00' },
+  slotDurationMinutes: 30,
+})
+slots.length // 10 — six wall-clock hours, but only five real hours
+```
+
+<Callout type="info">
+  Slot durations are always measured in **real elapsed time**. Every 30-minute
+  slot above is exactly 30 minutes long, even the one spanning the DST gap.
+</Callout>
+
+Need a calendar date to anchor time-only boundaries? Pass `day` (single-day) or
+let `generateDailyTimeslots` set it per day. See the
+[Scheduling guide](/docs/scheduling).

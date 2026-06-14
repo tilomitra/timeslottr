@@ -1,0 +1,57 @@
+---
+title: Availability primitives
+description: subtract and intersect — the pure interval math behind generateAvailableTimeslots.
+---
+
+# Availability primitives
+
+Two pure functions over half-open `[start, end)` intervals. Both operate on
+resolved `Interval` objects (`{ start: Date; end: Date }`) and are what
+[`generateAvailableTimeslots`](/api/generation) composes internally.
+
+## `subtract`
+
+```ts
+subtract(source: Interval[], busy: Interval[]): Interval[]
+```
+
+Removes `busy` intervals from `source` (available) intervals — _availability −
+bookings = free time_. Busy may be unsorted, overlapping, or boundary-touching;
+a busy window in the middle of a source **splits it in two**. Touching boundaries
+do not count as overlap. Runs in `O((n + m) log m)` via sort + sweep (no nested
+`n × m` scan).
+
+```ts
+import { subtract } from 'timeslottr'
+
+const free = subtract(
+  [{ start: new Date('2024-01-01T09:00:00Z'), end: new Date('2024-01-01T17:00:00Z') }],
+  [{ start: new Date('2024-01-01T12:00:00Z'), end: new Date('2024-01-01T13:00:00Z') }],
+)
+// → [09:00–12:00, 13:00–17:00]
+```
+
+## `intersect`
+
+```ts
+intersect(intervalSets: Interval[][]): Interval[]
+```
+
+Given one free-interval set per person, returns the windows where **all** sets
+overlap — a time that works for the whole team. Edge cases: `0` sets → `[]`;
+`1` set → a merged copy; any empty set → `[]` (someone with no availability blocks
+everyone). Runs in `O(total intervals · log)` via a sweep, never pairwise nested
+loops.
+
+```ts
+import { intersect } from 'timeslottr'
+
+const team = intersect([
+  [{ start: new Date('2024-01-01T09:00:00Z'), end: new Date('2024-01-01T15:00:00Z') }],
+  [{ start: new Date('2024-01-01T11:00:00Z'), end: new Date('2024-01-01T17:00:00Z') }],
+])
+// → [11:00–15:00]
+```
+
+Both return new `Interval` objects with fresh `Date` instances; inputs are not
+mutated. See the [`Interval` type](/api/types#interval).

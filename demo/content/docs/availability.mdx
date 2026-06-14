@@ -1,0 +1,107 @@
+---
+title: Multi-party Availability
+description: Subtract booked time and intersect across people to find slots that work for everyone.
+---
+
+import { Callout } from 'nextra/components'
+
+# Multi-party Availability
+
+Slot generation tells you _when a schedule is open_. Real scheduling needs more:
+_when is everyone actually free?_ timeslottr answers that with two pure interval
+primitives — [`subtract`](/api/availability) and [`intersect`](/api/availability)
+— and a composition helper, [`generateAvailableTimeslots`](/api/generation), that
+ties them into the slot generator.
+
+Everything here uses half-open `[start, end)` intervals (see
+[Core Concepts](/docs/core-concepts)), so boundary-touching never counts as a
+conflict.
+
+## The pipeline
+
+```
+base availability  →  subtract(busy)  →  intersect(participants)  →  slots
+```
+
+1. **Base availability** — your `range` minus buffers and `excludedWindows`.
+2. **Subtract `busy`** — remove already-booked events that block everyone.
+3. **Intersect participants** — keep only windows where every person is free.
+4. **Slot** — run the normal generator over what's left.
+
+## All in one call
+
+`generateAvailableTimeslots` accepts the **same config as `generateTimeslots`**
+plus two optional fields:
+
+```ts
+import { generateAvailableTimeslots } from 'timeslottr'
+
+const slots = generateAvailableTimeslots({
+  day: '2024-01-01',
+  timezone: 'America/New_York',
+  range: { start: '09:00', end: '17:00' },
+  slotDurationMinutes: 30,
+
+  // booked events on the host's calendar (block everyone)
+  busy: [{ start: '12:00', end: '13:00' }],
+
+  // each invitee's busy times — only times where ALL are free survive
+  participantsBusy: [
+    [{ start: '09:00', end: '10:00' }], // Alice
+    [{ start: '16:00', end: '17:00' }], // Bob
+  ],
+})
+// → 30-min slots between 10:00 and 16:00, excluding lunch
+```
+
+`busy` and `participantsBusy` accept the **same flexible formats** as `range` and
+`excludedWindows`: a `Date`, an ISO string, a time-only string like `'09:00'`, or
+a `{ date, time }` object.
+
+<Callout type="info">
+  A fully-booked day yields `[]`. An empty inner array in `participantsBusy`
+  means that participant is free for the whole window. Time-only `busy` strings
+  need a `day` (or dated boundaries), exactly like `excludedWindows`.
+</Callout>
+
+## The primitives directly
+
+Sometimes you already have free/busy intervals and just want the math. Both
+functions operate on resolved `Interval` objects (`{ start: Date; end: Date }`).
+
+### `subtract` — availability − bookings
+
+```ts
+import { subtract } from 'timeslottr'
+
+const free = subtract(
+  [{ start: new Date('2024-01-01T09:00:00Z'), end: new Date('2024-01-01T17:00:00Z') }],
+  [{ start: new Date('2024-01-01T12:00:00Z'), end: new Date('2024-01-01T13:00:00Z') }],
+)
+// → [09:00–12:00, 13:00–17:00]
+```
+
+Busy intervals may be unsorted, overlap each other, or touch boundaries; a busy
+window in the middle of a source **splits it in two**. Runs in `O((n + m) log m)`.
+
+### `intersect` — a time for the whole team
+
+```ts
+import { intersect } from 'timeslottr'
+
+const team = intersect([
+  [{ start: new Date('2024-01-01T09:00:00Z'), end: new Date('2024-01-01T15:00:00Z') }],
+  [{ start: new Date('2024-01-01T11:00:00Z'), end: new Date('2024-01-01T17:00:00Z') }],
+])
+// → [11:00–15:00]
+```
+
+Given one free-interval set per person, `intersect` returns the windows where
+**all** sets overlap. Edge cases: `0` sets → `[]`; `1` set → a merged copy; any
+empty set → `[]` (someone with no availability blocks everyone). Runs in
+`O(total intervals · log)`.
+
+## Try it
+
+The [Playground](/playground) lets you add booked time and watch the available
+slots recompute live.

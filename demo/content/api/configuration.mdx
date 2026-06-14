@@ -1,0 +1,44 @@
+---
+title: Configuration
+description: Every option accepted by generateTimeslots and generateDailyTimeslots.
+---
+
+# Configuration
+
+Options for `generateTimeslots()` (and, except where noted, the other
+generators). All options except `range` and `slotDurationMinutes` are optional.
+
+| Option | Type | Default | Description |
+| --- | --- | --- | --- |
+| `range` | `TimeslotRangeInput` | _required_ | Start and end boundaries for slot generation. Accepts `Date`s, ISO strings, or time-only strings like `"09:00"`. |
+| `slotDurationMinutes` | `number` | _required_ | Length of each slot in minutes. Must be positive. |
+| `day` | `Date \| string` | — | Calendar date to anchor time-only boundaries, e.g. `day: '2024-03-15'` with `range: { start: '09:00', end: '17:00' }`. |
+| `slotIntervalMinutes` | `number` | `slotDurationMinutes` | Step between consecutive slot starts. Set lower than the duration to create overlapping slots. |
+| `bufferBeforeMinutes` | `number` | `0` | Minutes trimmed from the start of the usable window before generating slots. |
+| `bufferAfterMinutes` | `number` | `0` | Minutes trimmed from the end of the usable window before generating slots. |
+| `excludedWindows` | `TimeslotRangeInput[]` | — | Sub-ranges to exclude (lunch breaks, blackouts). Overlapping exclusions are merged automatically. |
+| `timezone` | `string` | — | IANA timezone id (e.g. `"America/New_York"`, `"UTC"`). Controls how time-only strings are interpreted. |
+| `alignment` | `'start' \| 'end' \| 'center'` | `'start'` | How to handle leftover time that doesn't fill a complete slot. `'start'` discards at the end, `'end'` aligns backward from the range end, `'center'` distributes leftover on both sides. |
+| `minimumSlotDurationMinutes` | `number` | `slotDurationMinutes` | Minimum duration for partial/edge slots. Only relevant when `includeEdge` is `true`. |
+| `includeEdge` | `boolean` | `true` | Whether to include truncated edge slots (cut short by the range boundary or an exclusion) when they meet the minimum duration. |
+| `maxSlots` | `number` | — | Hard limit on the number of slots generated. Generation stops once this count is reached. |
+| `labelFormatter` | `(slot, index, durationMinutes) => string` | — | Callback to attach a custom label to each slot's metadata. Return `undefined` to skip. |
+
+## Additional `DailyTimeslotConfig` options
+
+`generateDailyTimeslots()` accepts all of the above (except `day`, which is set
+automatically per day), plus:
+
+| Option | Type | Default | Description |
+| --- | --- | --- | --- |
+| `range` | `TimeslotRangeInput \| Map<Weekday, TimeslotRangeInput \| null>` | _required_ | Either a single range applied to every day, or a `Map` for per-weekday schedules. Weekdays absent from the map are skipped. |
+| `maxDays` | `number` | `10000` | Safety limit on the number of calendar days to iterate, preventing runaway loops for large ranges. |
+
+## Additional `AvailableTimeslotConfig` options
+
+`generateAvailableTimeslots()` accepts all single-day options, plus:
+
+| Option | Type | Default | Description |
+| --- | --- | --- | --- |
+| `busy` | `TimeslotRangeInput[]` | — | Booked events to subtract from availability (block everyone). |
+| `participantsBusy` | `TimeslotRangeInput[][]` | — | Per-person busy sets. When present, results are narrowed to windows where every participant is free. |
