@@ -1,0 +1,109 @@
+---
+title: Getting Started
+description: Zero-dependency time slot generation and multi-party availability for TypeScript.
+---
+
+import { Tabs, Cards } from 'nextra/components'
+
+# timeslottr
+
+Generate time slots — and find when everyone's free. A **zero-dependency**,
+timezone-aware TypeScript library for the interval math that real scheduling
+products (Calendly / cal.com style) are built on.
+
+- **Multi-party availability, built in** — subtract booked time and intersect
+  across people to find slots that work for the whole team. Pure interval math
+  (sort-and-sweep, not naive `n × m`); no other zero-dep library ships this.
+- **Timezone & DST correct** — built on the platform `Intl` API, no `dayjs` or
+  `date-fns`. DST-transition days yield the right number of real-time slots.
+- **Zero dependencies** — dual ESM/CJS, fully typed, tree-shakeable; runs in
+  Node, edge runtimes, and browsers.
+- **Half-open `[start, end)` everywhere** — boundary-touching slots never
+  falsely overlap, so the off-by-one class of booking bug is designed out.
+- **Flexible generation** — single-day, multi-day, and per-weekday schedules
+  with buffers, exclusions, alignment, edge slots, `maxSlots`, and labels.
+
+> timeslottr is a slot & availability **engine**, not a booking product — it
+> gives you the interval math to build on, not calendar sync or persistence.
+
+## Installation
+
+<Tabs items={['npm', 'pnpm', 'yarn', 'bun']}>
+  <Tabs.Tab>
+    ```bash
+    npm install timeslottr
+    ```
+  </Tabs.Tab>
+  <Tabs.Tab>
+    ```bash
+    pnpm add timeslottr
+    ```
+  </Tabs.Tab>
+  <Tabs.Tab>
+    ```bash
+    yarn add timeslottr
+    ```
+  </Tabs.Tab>
+  <Tabs.Tab>
+    ```bash
+    bun add timeslottr
+    ```
+  </Tabs.Tab>
+</Tabs>
+
+Requires Node.js ≥ 18.
+
+## Your first slots
+
+Generate 30-minute slots for a single day, skipping a lunch break:
+
+```ts
+import { generateTimeslots } from 'timeslottr'
+
+const slots = generateTimeslots({
+  day: '2024-01-01',
+  timezone: 'America/New_York',
+  range: { start: '09:00', end: '17:00' },
+  slotDurationMinutes: 30,
+  excludedWindows: [{ start: '12:00', end: '13:00' }],
+})
+
+console.log(slots.length) // 14 (9–12 + 1–5, half-hourly)
+console.log(slots[0].start.toISOString())
+```
+
+Every slot is a `Timeslot` with `start` (inclusive) and `end` (exclusive)
+`Date`s plus `metadata`. The whole library uses **half-open `[start, end)`**
+intervals — a slot ending at 10:00 and one starting at 10:00 never overlap.
+
+## Find a time that works for a team
+
+The piece most scheduling tools need: take a base schedule, remove what's
+booked, and narrow to when **everyone** is free.
+
+```ts
+import { generateAvailableTimeslots } from 'timeslottr'
+
+const slots = generateAvailableTimeslots({
+  day: '2024-01-01',
+  timezone: 'America/New_York',
+  range: { start: '09:00', end: '17:00' },
+  slotDurationMinutes: 30,
+  busy: [{ start: '12:00', end: '13:00' }], // already-booked
+  participantsBusy: [
+    [{ start: '09:00', end: '10:00' }], // Alice
+    [{ start: '16:00', end: '17:00' }], // Bob
+  ],
+})
+// → 30-min slots only where the host, Alice, and Bob are all free
+```
+
+## Where to next
+
+<Cards>
+  <Cards.Card title="Core Concepts" href="/docs/core-concepts" arrow />
+  <Cards.Card title="Scheduling Guide" href="/docs/scheduling" arrow />
+  <Cards.Card title="Multi-party Availability" href="/docs/availability" arrow />
+  <Cards.Card title="API Reference" href="/api/generation" arrow />
+  <Cards.Card title="Live Playground" href="/playground" arrow />
+</Cards>

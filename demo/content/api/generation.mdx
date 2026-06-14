@@ -1,0 +1,111 @@
+---
+title: Generation functions
+description: generateTimeslots, generateDailyTimeslots, and generateAvailableTimeslots.
+---
+
+# Generation functions
+
+## `generateTimeslots`
+
+```ts
+generateTimeslots(config: TimeslotGenerationConfig): Timeslot[]
+```
+
+Generates time slots for a single day or custom window. The primary entry point
+for most use cases. See [Configuration](/api/configuration) for every option.
+
+```ts
+import { generateTimeslots } from 'timeslottr'
+
+const slots = generateTimeslots({
+  day: '2024-03-15',
+  timezone: 'America/New_York',
+  range: { start: '09:00', end: '17:00' },
+  slotDurationMinutes: 30,
+  slotIntervalMinutes: 15, // overlapping 30-min slots every 15 min
+  bufferBeforeMinutes: 10, // 10 min buffer at start
+  bufferAfterMinutes: 10, // 10 min buffer at end
+  excludedWindows: [{ start: '12:00', end: '13:00' }], // lunch break
+  alignment: 'start',
+  includeEdge: true,
+  maxSlots: 50,
+  labelFormatter: (slot, index) => `Slot #${index + 1}`,
+})
+```
+
+## `generateDailyTimeslots`
+
+```ts
+generateDailyTimeslots(period: TimeslotRangeInput, config: DailyTimeslotConfig): Timeslot[]
+```
+
+Generates slots across multiple days. Supports per-weekday schedules via a
+`Map<Weekday, TimeslotRangeInput | null>`, or a single range applied to every day.
+The first argument defines the overall date range; weekdays not present in the
+map (or mapped to `null`) are skipped.
+
+```ts
+import { generateDailyTimeslots, Weekday } from 'timeslottr'
+
+const slots = generateDailyTimeslots(
+  { start: '2024-03-01', end: '2024-03-14' },
+  {
+    range: new Map([
+      [Weekday.MON, { start: '09:00', end: '17:00' }],
+      [Weekday.TUE, { start: '09:00', end: '17:00' }],
+      [Weekday.WED, { start: '09:00', end: '12:00' }],
+      [Weekday.THU, { start: '09:00', end: '17:00' }],
+      [Weekday.FRI, { start: '10:00', end: '16:00' }],
+      // SAT and SUN omitted = no slots generated
+    ]),
+    slotDurationMinutes: 60,
+    timezone: 'America/New_York',
+    excludedWindows: [{ start: '12:00', end: '13:00' }],
+  },
+)
+```
+
+`DailyTimeslotConfig` accepts all single-day options plus `maxDays` — see
+[Configuration](/api/configuration#additional-dailytimeslotconfig-options).
+
+## `generateAvailableTimeslots`
+
+```ts
+generateAvailableTimeslots(config: AvailableTimeslotConfig): Timeslot[]
+```
+
+The same config as `generateTimeslots`, plus `busy` (events to subtract) and
+`participantsBusy` (per-person busy sets). It subtracts bookings, intersects
+across participants when provided, then runs the standard slot generator over the
+remaining free time. Slotting behavior is identical to `generateTimeslots`.
+
+```ts
+import { generateAvailableTimeslots } from 'timeslottr'
+
+const slots = generateAvailableTimeslots({
+  day: '2024-01-01',
+  timezone: 'America/New_York',
+  range: { start: '09:00', end: '17:00' },
+  slotDurationMinutes: 30,
+
+  // already-booked events on the host's calendar
+  busy: [{ start: '12:00', end: '13:00' }],
+
+  // each invitee's busy times — only times where ALL are free survive
+  participantsBusy: [
+    [{ start: '09:00', end: '10:00' }], // Alice
+    [
+      {
+        start: { date: '2024-01-01', time: '16:00' },
+        end: { date: '2024-01-01', time: '17:00' },
+      },
+    ], // Bob
+  ],
+})
+// → 30-min slots between 10:00 and 16:00, excluding lunch
+```
+
+Busy times accept the same flexible formats as `range` / `excludedWindows`
+(`string | Date | { date, time }`). A fully-booked day yields `[]`; an empty
+`participantsBusy` entry means that person is free for the whole window. See the
+[availability guide](/docs/availability) for the conceptual walkthrough.

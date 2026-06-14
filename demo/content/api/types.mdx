@@ -1,0 +1,112 @@
+---
+title: Types
+description: Every exported TypeScript type in timeslottr.
+---
+
+# Types
+
+## `Timeslot`
+
+The core output type. Start is inclusive, end is exclusive (half-open interval).
+
+```ts
+interface Timeslot {
+  start: Date // inclusive
+  end: Date // exclusive
+  metadata?: {
+    index: number // 0-based slot index
+    durationMinutes: number
+    label?: string // from labelFormatter
+  }
+}
+```
+
+## `Interval`
+
+A resolved half-open time interval — the shape [`subtract`](/api/availability) and
+[`intersect`](/api/availability) operate on.
+
+```ts
+interface Interval {
+  start: Date // inclusive
+  end: Date // exclusive
+}
+```
+
+## `AvailableTimeslotConfig`
+
+Extends `TimeslotGenerationConfig` with booked time for
+[`generateAvailableTimeslots`](/api/generation).
+
+```ts
+interface AvailableTimeslotConfig extends TimeslotGenerationConfig {
+  busy?: TimeslotRangeInput[] // events to subtract
+  participantsBusy?: TimeslotRangeInput[][] // per-person busy sets
+}
+```
+
+## `TimeslotJSON`
+
+JSON-safe version with ISO string dates. Used with
+[`timeslotToJSON` / `timeslotFromJSON`](/api/utilities).
+
+```ts
+interface TimeslotJSON {
+  start: string // ISO 8601
+  end: string // ISO 8601
+  metadata?: {
+    index: number
+    durationMinutes: number
+    label?: string
+  }
+}
+```
+
+## `TimeslotBoundaryInput`
+
+Flexible input type for a single time boundary.
+
+```ts
+type TimeslotBoundaryInput =
+  | Date // JavaScript Date object
+  | string // ISO string or time-only ("09:00", "17:30")
+  | {
+      date?: Date | string // optional date anchor
+      time:
+        | string
+        | { hour: number; minute?: number; second?: number }
+    }
+```
+
+## `TimeslotRangeInput`
+
+A start/end pair of boundaries.
+
+```ts
+interface TimeslotRangeInput {
+  start: TimeslotBoundaryInput
+  end: TimeslotBoundaryInput
+}
+```
+
+## `AlignmentStrategy`
+
+```ts
+type AlignmentStrategy = 'start' | 'end' | 'center'
+```
+
+## `Weekday`
+
+Maps to JavaScript's `Date.getDay()` values (Sunday = 0).
+
+```ts
+import { Weekday } from 'timeslottr'
+
+Weekday.SUN // 0
+Weekday.MON // 1
+Weekday.TUE // 2
+Weekday.WED // 3
+Weekday.THU // 4
+Weekday.FRI // 5
+Weekday.SAT // 6
+```

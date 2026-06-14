@@ -1,6 +1,44 @@
+/*
+ * Tailwind processes ONLY this file (utilities + tokens for the Playground and
+ * ui/* components). Nextra ships its own prebuilt (Tailwind v4) CSS, which is
+ * loaded separately via a <link> in app/layout.tsx so it does not pass through
+ * this Tailwind v3 pipeline (which would mangle it).
+ */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/*
+ * Use Mona Sans across the whole site. This is UNLAYERED on purpose: Nextra
+ * defines `--x-font-sans` inside its `@layer theme`, and unlayered declarations
+ * always win over layered ones regardless of source order, so this reliably
+ * overrides the theme's default sans stack.
+ */
+:root {
+  --x-font-sans: var(--font-mona), ui-sans-serif, system-ui, sans-serif;
+}
+
+/*
+ * Make Nextra's floating popovers (search results, select menus) opaque. They
+ * default to `bg-nextra-bg/70` + backdrop-blur (frosted glass), but the
+ * backdrop-blur doesn't compose here, so they read as translucent over dense
+ * documentation text. Unlayered, so it beats the layered utility.
+ * `--x-color-nextra-bg` is the solid theme background (light/dark aware).
+ */
+.x\:bg-nextra-bg\/70 {
+  background-color: var(--x-color-nextra-bg);
+}
+
+/*
+ * The search results panel is positioned by Floating UI, which rewrites its
+ * inline styles every frame. Combined with the theme's `transition: all`, that
+ * continuously restarts the open/close opacity transition, so it stalls partway
+ * (~0.38) and the panel stays translucent. Drop the transition on this panel so
+ * it renders at full opacity immediately.
+ */
+.nextra-search-results {
+  transition: none !important;
+}
 
 @layer base {
   :root {
@@ -52,12 +90,14 @@
 }
 
 @layer base {
-  * {
-    @apply border-border;
-  }
-  body {
-    @apply bg-background text-foreground;
-  }
+  /*
+   * NOTE: the global `* { border-border }` and `body { bg-background }` resets
+   * were intentionally removed — Nextra's theme owns the page chrome and
+   * typography. The :root/.dark token blocks above remain so the Playground and
+   * ui/* components (which use utilities like `bg-card`, `text-muted-foreground`)
+   * still render correctly. Tailwind preflight is disabled in tailwind.config.ts
+   * for the same reason.
+   */
 
   /* Custom scrollbar for JSON output and tables */
   ::-webkit-scrollbar {
