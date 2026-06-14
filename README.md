@@ -2,28 +2,28 @@
 
 # timeslottr
 
-Generate time slots with ease.<br>
-Zero dependencies. TypeScript-first. Works everywhere.
+Generate time slots — and find when everyone's free.<br>
+Timezone- and DST-correct. Zero dependencies. TypeScript-first.
 
 [![npm version](https://img.shields.io/npm/v/timeslottr)](https://www.npmjs.com/package/timeslottr)
 [![gzip size](https://img.shields.io/bundlephobia/minzip/timeslottr)](https://bundlephobia.com/package/timeslottr)
 [![license](https://img.shields.io/npm/l/timeslottr)](https://www.npmjs.com/package/timeslottr)
 [![downloads](https://img.shields.io/npm/dm/timeslottr)](https://www.npmjs.com/package/timeslottr)
 
-[Live Demo](https://timeslottr.vercel.app/) | [API](https://timeslottr.vercel.app/#api)
+[Docs](https://timeslottr.vercel.app/) · [API Reference](https://timeslottr.vercel.app/api/generation) · [Playground](https://timeslottr.vercel.app/playground)
 
 </div>
 
-## Key features
+## Why timeslottr
 
-- **Fast:** Written in TypeScript with efficient code that only uses the memory you need.
-- **Zero dependencies:** No external packages, keeping the library small and secure.
-- **Works everywhere:** Runs in Node.js, edge runtimes, and modern browsers.
-- **Timezone support:** Handles different date and time formats in any timezone.
-- **Flexible scheduling:** Add buffers, exclude time ranges, customize intervals, and control slot alignment.
-- **Comprehensive Test Coverage:** 90%+ test coverage.
-- **Built-in metadata:** Each slot includes useful information like index, duration, and custom labels.
-- **Rich utilities:** Merge overlapping slots, find gaps in schedules, check containment, and serialize to/from JSON.
+- **Multi-party availability, built in.** Subtract booked time and intersect across people to find slots that work for the whole team — the Calendly / cal.com primitive, as pure interval math (sort-and-sweep, not naive `n × m`). No other zero-dependency library ships this.
+- **Timezone & DST correct.** Built on the platform `Intl` API — no `dayjs` or `date-fns`. Spring-forward and fall-back days produce the right number of real-time slots, and every slot is exactly its duration in elapsed time.
+- **Zero dependencies.** Dual ESM/CJS, fully typed, tree-shakeable; runs in Node.js, edge runtimes, and modern browsers — with no transitive supply-chain surface.
+- **Half-open `[start, end)` everywhere.** Slots that touch a boundary never falsely overlap — the off-by-one class of booking bug is designed out, across `overlaps`, `subtract`, `intersect`, and `findGaps`.
+- **Flexible generation.** Single-day, multi-day, and per-weekday schedules with buffers, exclusions, alignment, edge slots, minimum duration, `maxSlots`, and custom labels.
+- **Batteries included.** Slot metadata (index, duration, label), utilities to merge, find gaps, check containment, and serialize to/from JSON — and 90%+ test coverage.
+
+> timeslottr is a slot & availability **engine**, not a booking product — it gives you the interval math to build on, not calendar sync or persistence.
 
 ## Installation
 
@@ -236,6 +236,65 @@ const weekdaySlots = generateDailyTimeslots(
 ```
 
 The `Weekday` enum values are: `SUN` (0), `MON` (1), `TUE` (2), `WED` (3), `THU` (4), `FRI` (5), `SAT` (6).
+
+## Multi-party availability
+
+Turn a base schedule into real bookable slots by subtracting booked time and intersecting across people — the layer scheduling products (Calendly / cal.com style) actually need. Everything uses half-open `[start, end)` intervals, so a slot that ends exactly when another begins never counts as a conflict.
+
+`generateAvailableTimeslots` takes the **same config as `generateTimeslots`** plus two optional fields:
+
+- `busy` — booked events to remove from availability (shared bookings that block everyone).
+- `participantsBusy` — per-person busy sets; the result is narrowed to windows where **everyone** is free.
+
+Busy times accept the same flexible formats as `range` / `excludedWindows` (`string | Date | { date, time }`).
+
+```ts
+import { generateAvailableTimeslots } from 'timeslottr';
+
+const slots = generateAvailableTimeslots({
+  day: '2024-01-01',
+  timezone: 'America/New_York',
+  range: { start: '09:00', end: '17:00' },
+  slotDurationMinutes: 30,
+
+  // already-booked events on the host's calendar
+  busy: [
+    { start: '12:00', end: '13:00' },                                   // lunch
+    { start: new Date('2024-01-01T15:00:00-05:00'), end: new Date('2024-01-01T15:30:00-05:00') }
+  ],
+
+  // each invitee's busy times — only times where ALL are free survive
+  participantsBusy: [
+    [{ start: '09:00', end: '10:00' }],                                  // Alice
+    [{ start: { date: '2024-01-01', time: '16:00' }, end: { date: '2024-01-01', time: '17:00' } }] // Bob
+  ]
+});
+// → 30-min slots between 10:00 and 16:00, excluding lunch and the 15:00 booking
+```
+
+Under the hood it composes two pure interval primitives you can also use directly. Both operate on resolved `Interval` objects (`{ start: Date; end: Date }`):
+
+```ts
+import { subtract, intersect } from 'timeslottr';
+
+// availability − bookings = free time. A busy window in the middle splits the
+// source in two; busy may be unsorted, overlapping, or boundary-touching.
+const free = subtract(
+  [{ start: new Date('2024-01-01T09:00Z'), end: new Date('2024-01-01T17:00Z') }],
+  [{ start: new Date('2024-01-01T12:00Z'), end: new Date('2024-01-01T13:00Z') }]
+);
+// → [09:00–12:00, 13:00–17:00]
+
+// find a time that works for the whole team: windows where every set overlaps.
+// 0 sets → []; 1 set → merged copy; any empty set → [] (no availability blocks all).
+const team = intersect([
+  [{ start: new Date('2024-01-01T09:00Z'), end: new Date('2024-01-01T15:00Z') }],
+  [{ start: new Date('2024-01-01T11:00Z'), end: new Date('2024-01-01T17:00Z') }]
+]);
+// → [11:00–15:00]
+```
+
+`subtract` runs in `O((n + m) log m)` and `intersect` in `O(total intervals · log)` — both via sort + sweep, never a nested `n × m` scan. Slotting (duration, interval, alignment, buffers, labels, `maxSlots`, timezone/DST handling) is identical to `generateTimeslots`.
 
 ## Development
 

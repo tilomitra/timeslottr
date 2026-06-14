@@ -42,6 +42,25 @@ function pushSlot(
   slots.push(slot);
 }
 
+/**
+ * Run slot generation across an ordered list of free segments, respecting the
+ * global `maxSlots` cap. Shared by `generateTimeslots` and
+ * `generateAvailableTimeslots` so slotting logic lives in exactly one place.
+ */
+export function runSlotGeneration(
+  segments: { start: Date; end: Date }[],
+  config: NormalizedConfig
+): Timeslot[] {
+  const slots: Timeslot[] = [];
+  for (const segment of segments) {
+    if (config.maxSlots !== undefined && slots.length >= config.maxSlots) {
+      break;
+    }
+    generateSlotsForSegment(slots, segment, config);
+  }
+  return slots;
+}
+
 export function generateSlotsForSegment(
   slots: Timeslot[],
   segment: { start: Date; end: Date },
