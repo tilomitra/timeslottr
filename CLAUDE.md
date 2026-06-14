@@ -23,7 +23,7 @@ A zero-dependency TypeScript library for generating time slots. Dual ESM/CJS bui
 
 - Nextra's prebuilt CSS is **Tailwind v4** compiled; the demo runs Tailwind v3. To avoid a PostCSS clash, Nextra's `style.css` is copied to `public/nextra-theme.css` by the `copy:theme` script (run via `predev`/`prebuild`) and loaded with a `<link>` in `app/layout.tsx` — it does NOT pass through the demo's Tailwind pipeline. Tailwind (preflight disabled) processes only `app/globals.css` for the Playground's tokens/utilities.
 - `package.json` pins `zod` to `~4.1.12` via `overrides`: Nextra 4.6 strips `children` before validating Layout props, and zod 4.4+ errors ("expected nonoptional") on the absent key.
-- The demo depends on the local library via `"timeslottr": "file:.."` (symlinked to repo root). After changing `src/`, rebuild root `dist` so the demo/Playground pick up changes.
+- The demo depends on the **published** `timeslottr` package (`^1.0.0`), not the local source, so it builds standalone on Vercel (a `file:..` link can't resolve there — root `dist/` is gitignored). The Playground only uses released API; bump the version in `demo/package.json` after a library release to surface new APIs in examples.
 - Search is Pagefind (`postbuild` script); it only indexes a production build, so search is empty under `next dev`.
 
 ## API documentation rule
