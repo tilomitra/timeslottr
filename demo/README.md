@@ -34,7 +34,7 @@ primitives it uses (`components/ui/`) are React components embedded into
 
 ```bash
 cd demo
-npm install        # also links the local library via "timeslottr": "file:.."
+npm install
 npm run dev        # http://localhost:3000 (auto-increments if the port is taken)
 ```
 
@@ -45,8 +45,9 @@ npm run dev        # http://localhost:3000 (auto-increments if the port is taken
 > npm run build && npm run start
 > ```
 
-When you change the library source (`../src`), rebuild the root `dist` so the docs
-and Playground pick up the changes (the dependency is a `file:..` symlink).
+The site depends on the **published** `timeslottr` package (`^1.0.0`) so it builds
+standalone on Vercel. The Playground only uses the stable, released API; bump the
+version here after a library release to pick up new APIs in examples.
 
 ## How the styling is wired (gotchas)
 
