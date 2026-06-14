@@ -4,9 +4,13 @@ export type { DailyTimeslotConfig, WeekdayTimeslotRangeInput } from './generate-
 export { createTimeslot, overlaps, contains, mergeSlots, findGaps, timeslotToJSON, timeslotFromJSON } from './timeslot.js';
 export type { TimeslotJSON } from './timeslot.js';
 
+export { subtract, intersect, generateAvailableTimeslots } from './availability.js';
+export type { AvailableTimeslotConfig } from './availability.js';
+
 export type {
   AlignmentStrategy,
   DateValue,
+  Interval,
   LabelFormatter,
   TimeOfDayInput,
   Timeslot,

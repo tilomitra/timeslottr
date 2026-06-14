@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-06-14
+
+### Added
+- Multi-party availability layer for turning a base schedule into bookable slots:
+  - `subtract(source, busy)` — remove busy intervals from available intervals (availability − bookings = free time). Handles unsorted/overlapping/boundary-touching busy and mid-interval splits. `O((n + m) log m)` via sort + sweep.
+  - `intersect(intervalSets)` — find the windows where every participant's free-interval set overlaps (a time that works for the whole team). `O(total intervals · log)` via sweep, no pairwise nested loops.
+  - `generateAvailableTimeslots(config)` — `generateTimeslots` config plus optional `busy` and `participantsBusy`; composes base-availability → subtract → intersect → the existing slot generator.
+  - Exported `Interval` and `AvailableTimeslotConfig` types.
+- All new primitives use half-open `[start, end)` semantics consistent with the rest of the library, and `busy` accepts the same flexible formats as `range` / `excludedWindows`.
+
 ## [1.0.0] - 2026-03-30
 
 ### Added

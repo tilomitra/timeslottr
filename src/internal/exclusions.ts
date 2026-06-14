@@ -1,7 +1,7 @@
-import type { TimeslotRangeInput } from '../types.js';
+import type { Interval, TimeslotRangeInput } from '../types.js';
 import { resolveRange, type BoundaryContext } from './boundaries.js';
 
-export type Interval = { start: Date; end: Date };
+export type { Interval };
 
 export function mergeIntervals(intervals: Interval[]): Interval[] {
   if (intervals.length === 0) {

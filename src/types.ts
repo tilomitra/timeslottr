@@ -20,6 +20,21 @@ export interface TimeslotRangeInput {
   end: TimeslotBoundaryInput;
 }
 
+/**
+ * A resolved half-open time interval `[start, end)`.
+ *
+ * The start is inclusive and the end is exclusive — consistent with the rest of
+ * the library (see {@link Timeslot}, {@link contains}). This is the shape the
+ * multi-party availability primitives ({@link subtract}, {@link intersect})
+ * operate on.
+ */
+export interface Interval {
+  /** Start of the interval (inclusive). */
+  start: Date;
+  /** End of the interval (exclusive). */
+  end: Date;
+}
+
 export type AlignmentStrategy = 'start' | 'end' | 'center';
 
 export interface TimeslotMetadata {
