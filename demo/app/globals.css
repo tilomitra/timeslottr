@@ -9,13 +9,13 @@
 @tailwind utilities;
 
 /*
- * Use Mona Sans across the whole site. This is UNLAYERED on purpose: Nextra
- * defines `--x-font-sans` inside its `@layer theme`, and unlayered declarations
- * always win over layered ones regardless of source order, so this reliably
- * overrides the theme's default sans stack.
+ * Use Inter (the Claude API docs typeface) across the whole site. This is
+ * UNLAYERED on purpose: Nextra defines `--x-font-sans` inside its `@layer
+ * theme`, and unlayered declarations always win over layered ones regardless
+ * of source order, so this reliably overrides the theme's default sans stack.
  */
 :root {
-  --x-font-sans: var(--font-mona), ui-sans-serif, system-ui, sans-serif;
+  --x-font-sans: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
 }
 
 /*

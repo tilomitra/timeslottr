@@ -1,6 +1,5 @@
 import type { Metadata } from 'next'
-import { JetBrains_Mono } from 'next/font/google'
-import localFont from 'next/font/local'
+import { Inter, JetBrains_Mono } from 'next/font/google'
 import { Footer, Layout, Navbar } from 'nextra-theme-docs'
 import { Head } from 'nextra/components'
 import { getPageMap } from 'nextra/page-map'
@@ -11,14 +10,11 @@ import { Github } from 'lucide-react'
 import './globals.css'
 import { cn } from '@/lib/utils'
 
-// Mona Sans is not in next/font/google's bundled list for this Next version, so
-// self-host the variable (wght 200–900) woff2 files via next/font/local.
-const mona = localFont({
-  src: [
-    { path: './fonts/Mona-Sans-latin.woff2', weight: '200 900', style: 'normal' },
-    { path: './fonts/Mona-Sans-latin-italic.woff2', weight: '200 900', style: 'italic' },
-  ],
-  variable: '--font-mona',
+// Inter is the typeface used by the Claude API docs. Load the variable font
+// (it covers the full weight range) via next/font/google for the whole site.
+const sans = Inter({
+  subsets: ['latin'],
+  variable: '--font-sans',
   display: 'swap',
 })
 const mono = JetBrains_Mono({
@@ -71,7 +67,7 @@ export default async function RootLayout({
       lang="en"
       dir="ltr"
       suppressHydrationWarning
-      className={cn(mona.variable, mono.variable)}
+      className={cn(sans.variable, mono.variable)}
     >
       <Head
         // Claude-docs-inspired palette: a warm terracotta/clay accent and a
