@@ -14,25 +14,26 @@ Timezone and DST correct. Zero dependencies. TypeScript-first.
 
 </div>
 
-## What it's for
+## Overview
 
-Scheduling features keep hitting the same problems. You have to turn working hours
-into bookable slots, get timezones and daylight saving right, and work out when
-several people are free at the same time. Most date libraries cover the easy part
-and leave the rest to you, which is usually where the bugs show up.
+timeslottr is a zero-dependency TypeScript library for **interval arithmetic over
+calendar time**. It turns working hours into bookable slots, subtracts
+already-booked events, and intersects multiple participants' calendars to find the
+windows where everyone is free.
 
-timeslottr handles all of it, with no runtime dependencies.
+It's the engine layer that scheduling products like Calendly and cal.com are built
+on — the interval math, without the calendar sync, storage, or UI.
 
-- **Booked time and team availability.** Remove meetings that are already on the calendar, then find the windows where everyone is free. This is the part Calendly and cal.com depend on, and it is normally hand-rolled with slow, buggy nested loops. timeslottr does it with a sorted sweep.
-- **Timezones and DST.** It runs on the built-in `Intl` API, so a day that springs forward or falls back still produces the right number of real slots. No `dayjs`, no `date-fns`.
-- **Boundary bugs.** Every interval is half-open, `[start, end)`. A slot that ends at 10:00 does not collide with one that starts at 10:00, so the off-by-one mistakes that quietly corrupt bookings cannot happen.
-- **The fiddly details.** Buffers between meetings, lunch breaks, overlapping slots, alignment, and per-weekday hours are all config, not code you write.
+- **Slot generation.** Produce fixed-duration slots from a daily range or a per-weekday `Map`, with a configurable step interval (`slotIntervalMinutes` for overlapping or spaced starts), leading/trailing buffers, excluded windows, edge alignment (`start` / `end` / `center`), and a `maxSlots` cap.
+- **Availability math.** `subtract` (availability − busy) and `intersect` (overlap across N participants) run as sort-then-sweep passes — `O((n + m) log m)` and `O(total · log)` — instead of the nested loops these features are usually hand-rolled with.
+- **Timezone & DST correct.** Built on the platform `Intl.DateTimeFormat` API, so a day that springs forward or falls back yields the right number of real slots. No `dayjs`, no `date-fns`, no IANA database in your bundle.
+- **Half-open intervals.** Every interval is `[start, end)`. A slot ending at 10:00 does not collide with one starting at 10:00, which eliminates the off-by-one errors that silently corrupt bookings.
 
 It ships dual ESM/CJS, is fully typed, runs in Node, edge runtimes, and browsers,
 and has 90%+ test coverage.
 
-> timeslottr is an engine, not a booking product. It gives you the interval math.
-> Calendar sync and storage stay yours.
+> timeslottr is an engine, not a booking product. It hands you `Date`-based
+> interval results; calendar sync and storage stay yours.
 
 ## Installation
 
