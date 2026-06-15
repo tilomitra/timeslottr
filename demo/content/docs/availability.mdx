@@ -7,31 +7,35 @@ import { Callout } from 'nextra/components'
 
 # Multi-party Availability
 
-Slot generation tells you _when a schedule is open_. Real scheduling needs more:
-_when is everyone actually free?_ timeslottr answers that with two pure interval
-primitives — [`subtract`](/api/availability) and [`intersect`](/api/availability)
-— and a composition helper, [`generateAvailableTimeslots`](/api/generation), that
-ties them into the slot generator.
+Generating slots tells you when a schedule is open. Booking a meeting needs more
+than that: you have to know when everyone is actually free. That means removing
+the time that is already booked and then finding the overlap across several
+people's calendars.
+
+This is the part teams usually hand-roll, and it is easy to get wrong. timeslottr
+gives you two interval functions for it, [`subtract`](/api/availability) and
+[`intersect`](/api/availability), plus [`generateAvailableTimeslots`](/api/generation),
+which wires them into the slot generator.
 
 Everything here uses half-open `[start, end)` intervals (see
-[Core Concepts](/docs/core-concepts)), so boundary-touching never counts as a
-conflict.
+[Core Concepts](/docs/core-concepts)), so a slot that ends when a meeting starts
+is not treated as a conflict.
 
 ## The pipeline
 
 ```
-base availability  →  subtract(busy)  →  intersect(participants)  →  slots
+base availability  ->  subtract(busy)  ->  intersect(participants)  ->  slots
 ```
 
-1. **Base availability** — your `range` minus buffers and `excludedWindows`.
-2. **Subtract `busy`** — remove already-booked events that block everyone.
-3. **Intersect participants** — keep only windows where every person is free.
-4. **Slot** — run the normal generator over what's left.
+1. Start from base availability: your `range` minus buffers and `excludedWindows`.
+2. Subtract `busy` to remove events that are already booked for everyone.
+3. Intersect the participants to keep only windows where every person is free.
+4. Run the normal generator over what is left.
 
 ## All in one call
 
-`generateAvailableTimeslots` accepts the **same config as `generateTimeslots`**
-plus two optional fields:
+`generateAvailableTimeslots` takes the same config as `generateTimeslots`, plus
+two optional fields:
 
 ```ts
 import { generateAvailableTimeslots } from 'timeslottr'
@@ -42,34 +46,34 @@ const slots = generateAvailableTimeslots({
   range: { start: '09:00', end: '17:00' },
   slotDurationMinutes: 30,
 
-  // booked events on the host's calendar (block everyone)
+  // booked events on the host's calendar, blocked for everyone
   busy: [{ start: '12:00', end: '13:00' }],
 
-  // each invitee's busy times — only times where ALL are free survive
+  // each invitee's busy times; only times where all are free survive
   participantsBusy: [
     [{ start: '09:00', end: '10:00' }], // Alice
     [{ start: '16:00', end: '17:00' }], // Bob
   ],
 })
-// → 30-min slots between 10:00 and 16:00, excluding lunch
+// 30-minute slots between 10:00 and 16:00, with lunch removed
 ```
 
-`busy` and `participantsBusy` accept the **same flexible formats** as `range` and
+`busy` and `participantsBusy` accept the same formats as `range` and
 `excludedWindows`: a `Date`, an ISO string, a time-only string like `'09:00'`, or
 a `{ date, time }` object.
 
 <Callout type="info">
-  A fully-booked day yields `[]`. An empty inner array in `participantsBusy`
-  means that participant is free for the whole window. Time-only `busy` strings
-  need a `day` (or dated boundaries), exactly like `excludedWindows`.
+  A fully booked day returns `[]`. An empty inner array in `participantsBusy`
+  means that person is free for the whole window. Time-only `busy` strings need a
+  `day` or dated boundaries, the same as `excludedWindows`.
 </Callout>
 
-## The primitives directly
+## The primitives on their own
 
-Sometimes you already have free/busy intervals and just want the math. Both
-functions operate on resolved `Interval` objects (`{ start: Date; end: Date }`).
+Sometimes you already have free and busy intervals and just want the math. Both
+functions work on resolved `Interval` objects (`{ start: Date; end: Date }`).
 
-### `subtract` — availability − bookings
+### subtract: availability minus bookings
 
 ```ts
 import { subtract } from 'timeslottr'
@@ -78,13 +82,14 @@ const free = subtract(
   [{ start: new Date('2024-01-01T09:00:00Z'), end: new Date('2024-01-01T17:00:00Z') }],
   [{ start: new Date('2024-01-01T12:00:00Z'), end: new Date('2024-01-01T13:00:00Z') }],
 )
-// → [09:00–12:00, 13:00–17:00]
+// result: [09:00 to 12:00, 13:00 to 17:00]
 ```
 
-Busy intervals may be unsorted, overlap each other, or touch boundaries; a busy
-window in the middle of a source **splits it in two**. Runs in `O((n + m) log m)`.
+Busy intervals can be unsorted, overlap each other, or touch boundaries. A busy
+window in the middle of a source splits it in two. It runs in `O((n + m) log m)`,
+not the nested loop people usually reach for first.
 
-### `intersect` — a time for the whole team
+### intersect: a time for the whole team
 
 ```ts
 import { intersect } from 'timeslottr'
@@ -93,15 +98,15 @@ const team = intersect([
   [{ start: new Date('2024-01-01T09:00:00Z'), end: new Date('2024-01-01T15:00:00Z') }],
   [{ start: new Date('2024-01-01T11:00:00Z'), end: new Date('2024-01-01T17:00:00Z') }],
 ])
-// → [11:00–15:00]
+// result: [11:00 to 15:00]
 ```
 
-Given one free-interval set per person, `intersect` returns the windows where
-**all** sets overlap. Edge cases: `0` sets → `[]`; `1` set → a merged copy; any
-empty set → `[]` (someone with no availability blocks everyone). Runs in
-`O(total intervals · log)`.
+Given one set of free intervals per person, `intersect` returns the windows where
+all of them overlap. With no sets it returns `[]`. With one set it returns a
+merged copy. If any set is empty, the result is `[]`, since a person with no
+availability blocks everyone. It runs in `O(total intervals · log)`.
 
 ## Try it
 
 The [Playground](/playground) lets you add booked time and watch the available
-slots recompute live.
+slots update as you go.

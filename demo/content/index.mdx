@@ -1,30 +1,36 @@
 ---
 title: Getting Started
-description: Zero-dependency time slot generation and multi-party availability for TypeScript.
+description: Zero-dependency time slot generation and team availability for TypeScript.
 ---
 
 import { Tabs, Cards } from 'nextra/components'
 
 # timeslottr
 
-Generate time slots — and find when everyone's free. A **zero-dependency**,
-timezone-aware TypeScript library for the interval math that real scheduling
-products (Calendly / cal.com style) are built on.
+Scheduling features keep hitting the same problems. You have to turn working
+hours into bookable slots, get timezones and daylight saving right, and work out
+when several people are free at the same time. Most date libraries cover the easy
+part and leave the rest to you, which is usually where the bugs show up.
 
-- **Multi-party availability, built in** — subtract booked time and intersect
-  across people to find slots that work for the whole team. Pure interval math
-  (sort-and-sweep, not naive `n × m`); no other zero-dep library ships this.
-- **Timezone & DST correct** — built on the platform `Intl` API, no `dayjs` or
-  `date-fns`. DST-transition days yield the right number of real-time slots.
-- **Zero dependencies** — dual ESM/CJS, fully typed, tree-shakeable; runs in
-  Node, edge runtimes, and browsers.
-- **Half-open `[start, end)` everywhere** — boundary-touching slots never
-  falsely overlap, so the off-by-one class of booking bug is designed out.
-- **Flexible generation** — single-day, multi-day, and per-weekday schedules
-  with buffers, exclusions, alignment, edge slots, `maxSlots`, and labels.
+timeslottr handles all of it, with no runtime dependencies.
 
-> timeslottr is a slot & availability **engine**, not a booking product — it
-> gives you the interval math to build on, not calendar sync or persistence.
+Here is what it solves:
+
+- **Booked time and team availability.** Remove meetings that are already on the
+  calendar, then find the windows where everyone is free. This is the part
+  Calendly and cal.com depend on, and it is normally hand-rolled with slow,
+  buggy nested loops. timeslottr does it with a sorted sweep instead.
+- **Timezones and DST.** It runs on the built-in `Intl` API, so a day that
+  springs forward or falls back still produces the right number of real slots.
+  No `dayjs`, no `date-fns`.
+- **Boundary bugs.** Every interval is half-open, `[start, end)`. A slot that
+  ends at 10:00 does not collide with one that starts at 10:00, so the
+  off-by-one mistakes that quietly corrupt bookings cannot happen.
+- **The fiddly details.** Buffers between meetings, lunch breaks, overlapping
+  slots, alignment, and per-weekday hours are all config, not code you write.
+
+timeslottr is an engine, not a booking product. It gives you the interval math.
+Calendar sync and storage stay yours.
 
 ## Installation
 
@@ -68,18 +74,17 @@ const slots = generateTimeslots({
   excludedWindows: [{ start: '12:00', end: '13:00' }],
 })
 
-console.log(slots.length) // 14 (9–12 + 1–5, half-hourly)
+console.log(slots.length) // 14 slots: 9 to 12 and 1 to 5, every 30 minutes
 console.log(slots[0].start.toISOString())
 ```
 
-Every slot is a `Timeslot` with `start` (inclusive) and `end` (exclusive)
-`Date`s plus `metadata`. The whole library uses **half-open `[start, end)`**
-intervals — a slot ending at 10:00 and one starting at 10:00 never overlap.
+Each slot is a `Timeslot` with an inclusive `start`, an exclusive `end`, and some
+`metadata`. Start and end are real `Date` objects.
 
 ## Find a time that works for a team
 
-The piece most scheduling tools need: take a base schedule, remove what's
-booked, and narrow to when **everyone** is free.
+Take a base schedule, remove what is already booked, and keep only the windows
+where everyone is free.
 
 ```ts
 import { generateAvailableTimeslots } from 'timeslottr'
