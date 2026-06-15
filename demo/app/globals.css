@@ -9,13 +9,13 @@
 @tailwind utilities;
 
 /*
- * Use Mona Sans across the whole site. This is UNLAYERED on purpose: Nextra
- * defines `--x-font-sans` inside its `@layer theme`, and unlayered declarations
- * always win over layered ones regardless of source order, so this reliably
- * overrides the theme's default sans stack.
+ * Use Inter (the Claude API docs typeface) across the whole site. This is
+ * UNLAYERED on purpose: Nextra defines `--x-font-sans` inside its `@layer
+ * theme`, and unlayered declarations always win over layered ones regardless
+ * of source order, so this reliably overrides the theme's default sans stack.
  */
 :root {
-  --x-font-sans: var(--font-mona), ui-sans-serif, system-ui, sans-serif;
+  --x-font-sans: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
 }
 
 /*
@@ -40,52 +40,164 @@
   transition: none !important;
 }
 
+/* ===========================================================================
+ * Claude-docs-inspired theme overlay
+ *
+ * Goal: move the Nextra chrome from its default cool blue-grays toward the
+ * warm, paper-like palette of the Claude API docs — an ivory canvas, warm
+ * "stone" neutrals, and a terracotta accent (set via <Head> in layout.tsx).
+ *
+ * Everything here is UNLAYERED on purpose. Nextra ships its palette inside an
+ * `@layer theme`, and an unlayered declaration always beats a layered one
+ * regardless of source order or specificity — the same mechanism the
+ * `--x-font-sans` override above relies on. So these win without `!important`.
+ * ===========================================================================*/
+
+/* Retint the gray / neutral / slate ramps Nextra uses for text, borders, and
+ * surfaces toward Tailwind's warm "stone" scale. This is what turns sidebar
+ * text, table borders, code-block chrome, and heading text warm. */
+:root {
+  --x-color-gray-50: oklch(98.5% 0.001 106.42);
+  --x-color-gray-100: oklch(97% 0.0015 106.42);
+  --x-color-gray-200: oklch(92.3% 0.003 48.72);
+  --x-color-gray-300: oklch(86.9% 0.005 56.37);
+  --x-color-gray-400: oklch(70.9% 0.01 56.26);
+  --x-color-gray-500: oklch(55.3% 0.013 58.07);
+  --x-color-gray-600: oklch(44.4% 0.011 73.64);
+  --x-color-gray-700: oklch(37.4% 0.01 67.56);
+  --x-color-gray-800: oklch(26.8% 0.007 34.3);
+  --x-color-gray-900: oklch(21.6% 0.006 56.04);
+
+  --x-color-neutral-50: oklch(98.5% 0.001 106.42);
+  --x-color-neutral-100: oklch(97% 0.0015 106.42);
+  --x-color-neutral-200: oklch(92.3% 0.003 48.72);
+  --x-color-neutral-300: oklch(86.9% 0.005 56.37);
+  --x-color-neutral-400: oklch(70.9% 0.01 56.26);
+  --x-color-neutral-500: oklch(55.3% 0.013 58.07);
+  --x-color-neutral-600: oklch(44.4% 0.011 73.64);
+  --x-color-neutral-700: oklch(37.4% 0.01 67.56);
+  --x-color-neutral-800: oklch(26.8% 0.007 34.3);
+  --x-color-neutral-900: oklch(21.6% 0.006 56.04);
+
+  /* Headings render with text-slate-900 / dark:text-slate-100. */
+  --x-color-slate-50: oklch(98.5% 0.001 106.42);
+  --x-color-slate-100: oklch(97% 0.0015 106.42);
+  --x-color-slate-200: oklch(92.3% 0.003 48.72);
+  --x-color-slate-700: oklch(37.4% 0.01 67.56);
+  --x-color-slate-900: oklch(24% 0.012 60);
+
+  /* Narrow the reading column. Nextra's 90rem spans the whole shell; the docs
+   * we're emulating keep prose comfortably measured. */
+  --nextra-content-width: 84rem;
+}
+
+/* The article column itself — tighten the measure and relax the rhythm so long
+ * prose reads like a document, not edge-to-edge text. */
+.nextra-content {
+  font-size: 1rem;
+  line-height: 1.75;
+}
+
+/* Headings: restrained sizes and semibold (not bold) weight, so they sit
+ * closer to the body in the calm, document-like hierarchy of the Claude docs.
+ * Nextra's defaults (text-4xl/3xl/2xl + font-bold) read too large and heavy;
+ * we scale both down and tighten tracking. */
+.nextra-content h1 {
+  font-size: 1.875rem; /* 30px, down from text-4xl (36px) */
+  line-height: 1.25;
+  font-weight: 600;
+  letter-spacing: -0.018em;
+}
+.nextra-content h2 {
+  font-size: 1.375rem; /* 22px, down from text-3xl (30px) */
+  line-height: 1.3;
+  font-weight: 600;
+  letter-spacing: -0.014em;
+  margin-top: 3rem;
+  padding-bottom: 0.4rem;
+}
+.nextra-content h3 {
+  font-size: 1.15rem; /* ~18px, down from text-2xl (24px) */
+  line-height: 1.4;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  margin-top: 2.25rem;
+}
+.nextra-content h4 {
+  font-size: 1.0625rem; /* 17px, down from text-xl (20px) */
+  font-weight: 600;
+  letter-spacing: -0.008em;
+}
+
+/* Inline code: a warm parchment chip instead of the default cool gray. */
+:where(.nextra-content) :not(pre) > code.nextra-code {
+  background-color: oklch(95% 0.012 75);
+  border-color: oklch(87% 0.012 70);
+}
+.dark :where(.nextra-content) :not(pre) > code.nextra-code {
+  background-color: oklch(30% 0.012 60);
+  border-color: oklch(40% 0.012 60);
+}
+
+/* Cards (Getting Started "Where to next" grid): warm hover that picks up the
+ * terracotta accent, echoing the link color. */
+.nextra-card:hover {
+  border-color: var(--x-color-primary-600);
+  background-color: oklch(96.5% 0.014 70);
+}
+.dark .nextra-card:hover {
+  background-color: oklch(28% 0.012 60);
+}
+
 @layer base {
   :root {
-    /* Light Theme (Workflow DevKit Inspired) */
-    --background: 60 6% 97%;
-    --foreground: 240 10% 3.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 240 10% 3.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 3.9%;
-    --primary: 240 5.9% 10%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 240 4.8% 95.9%;
-    --secondary-foreground: 240 5.9% 10%;
-    --muted: 240 4.8% 95.9%;
-    --muted-foreground: 240 3.8% 46.1%;
-    --accent: 240 4.8% 95.9%;
-    --accent-foreground: 240 5.9% 10%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 240 5.9% 90%;
-    --input: 240 5.9% 90%;
-    --ring: 240 10% 3.9%;
+    /* Light theme — Claude-docs warm palette. Ivory canvas, stone neutrals,
+     * and a terracotta accent/ring so the Playground matches the Nextra
+     * chrome retinted above. */
+    --background: 48 18% 97%;
+    --foreground: 30 9% 12%;
+    --card: 40 33% 99%;
+    --card-foreground: 30 9% 12%;
+    --popover: 40 33% 99%;
+    --popover-foreground: 30 9% 12%;
+    --primary: 30 8% 14%;
+    --primary-foreground: 48 20% 98%;
+    --secondary: 40 14% 94%;
+    --secondary-foreground: 30 8% 14%;
+    --muted: 40 14% 94%;
+    --muted-foreground: 32 6% 42%;
+    --accent: 18 48% 94%;
+    --accent-foreground: 16 55% 32%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 48 20% 98%;
+    --border: 36 12% 87%;
+    --input: 36 12% 87%;
+    --ring: 15 63% 47%;
     --radius: 0.5rem;
   }
 
   .dark {
-    /* Fallback Dark Theme (if needed, but user requested light) */
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
+    /* Dark theme — warm "kraft" charcoal to match the light ivory/terracotta
+     * palette (mirrors the <Head> dark background #1a1917). */
+    --background: 30 8% 10%;
+    --foreground: 40 20% 96%;
+    --card: 30 7% 13%;
+    --card-foreground: 40 20% 96%;
+    --popover: 30 7% 13%;
+    --popover-foreground: 40 20% 96%;
+    --primary: 40 20% 96%;
+    --primary-foreground: 30 8% 14%;
+    --secondary: 30 6% 18%;
+    --secondary-foreground: 40 20% 96%;
+    --muted: 30 6% 18%;
+    --muted-foreground: 36 10% 64%;
+    --accent: 16 30% 22%;
+    --accent-foreground: 18 60% 78%;
+    --destructive: 0 62.8% 45%;
+    --destructive-foreground: 40 20% 96%;
+    --border: 30 6% 22%;
+    --input: 30 6% 22%;
+    --ring: 18 65% 63%;
   }
 }
 
