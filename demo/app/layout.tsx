@@ -73,7 +73,18 @@ export default async function RootLayout({
       suppressHydrationWarning
       className={cn(mona.variable, mono.variable)}
     >
-      <Head>
+      <Head
+        // Claude-docs-inspired palette: a warm terracotta/clay accent and a
+        // soft ivory canvas (vs. Nextra's default blue-on-white). These feed
+        // Nextra's `--nextra-primary-*` / `--nextra-bg` tokens; globals.css
+        // warms the gray/neutral scales to match.
+        color={{
+          hue: { light: 15, dark: 18 },
+          saturation: { light: 63, dark: 65 },
+          lightness: { light: 47, dark: 63 },
+        }}
+        backgroundColor={{ light: '#faf9f5', dark: '#1a1917' }}
+      >
         {/* Nextra's prebuilt theme CSS, served statically (see copy:theme script). */}
         <link rel="stylesheet" href="/nextra-theme.css" />
       </Head>
