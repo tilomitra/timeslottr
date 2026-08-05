@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.1] - 2026-08-05
+
+### Fixed
+- Date inputs that resolved to the wrong day without reporting anything. Both cases hit `excludedWindows` hardest: an exclusion dated to a day that never matched silently didn't apply, leaving the slot it was meant to block bookable.
+  - Days past the end of their month (`2025-02-30`, `2025-04-31`) were accepted and rolled over into the following month. They now throw a `RangeError`. 29 February is checked against the full leap-year rule, so `2024-02-29` and `2000-02-29` are valid while `2025-02-29` and `1900-02-29` are not.
+  - Date-only strings outside the strict `YYYY-MM-DD` form (`2025-3-5`, `2025/03/05`) were handed to the engine, which resolved them against the *system* zone rather than the configured `timezone` — landing a day off whenever the two disagreed, and giving different results on different machines. They now throw a `TypeError` naming the strict form. Strings carrying an explicit time are unchanged.
+- Applies to every date input — `range`, `day`, `now`, `excludedWindows`, `busy`, and the `generateDailyTimeslots` period — since all of them share the same resolution helpers.
+
 ## [1.2.0] - 2026-08-05
 
 ### Added
@@ -69,7 +77,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ESM and CommonJS dual-package support.
 - TypeScript type definitions included in the package.
 
-[Unreleased]: https://github.com/tilomitra/timeslottr/compare/v1.2.0...HEAD
+[Unreleased]: https://github.com/tilomitra/timeslottr/compare/v1.2.1...HEAD
+[1.2.1]: https://github.com/tilomitra/timeslottr/compare/v1.2.0...v1.2.1
 [1.2.0]: https://github.com/tilomitra/timeslottr/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/tilomitra/timeslottr/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/tilomitra/timeslottr/compare/v0.4.0...v1.0.0

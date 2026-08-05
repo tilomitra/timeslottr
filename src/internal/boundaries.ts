@@ -8,6 +8,7 @@ import {
   calendarFromDateValue,
   isDateOnlyString,
   isTimeOnlyString,
+  parseInstantFromString,
   toCalendarDateFromInstant
 } from './time.js';
 
@@ -46,11 +47,7 @@ export function resolveBoundary(input: TimeslotBoundaryInput, context: BoundaryC
       return { instant, calendar };
     }
 
-    const normalized = trimmed.includes('T') ? trimmed : trimmed.replace(' ', 'T');
-    const instant = new Date(normalized);
-    if (Number.isNaN(instant.getTime())) {
-      throw new TypeError(`Invalid boundary string: ${input}`);
-    }
+    const instant = parseInstantFromString(input, 'boundary');
     return { instant, calendar: toCalendarDateFromInstant(instant, timeZone) };
   }
 
