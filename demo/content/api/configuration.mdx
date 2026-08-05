@@ -22,7 +22,16 @@ generators). All options except `range` and `slotDurationMinutes` are optional.
 | `minimumSlotDurationMinutes` | `number` | `slotDurationMinutes` | Minimum duration for partial/edge slots. Only relevant when `includeEdge` is `true`. |
 | `includeEdge` | `boolean` | `true` | Whether to include truncated edge slots (cut short by the range boundary or an exclusion) when they meet the minimum duration. |
 | `maxSlots` | `number` | none | Hard limit on the number of slots generated. Generation stops once this count is reached. |
+| `minimumNoticeMinutes` | `number` | none | Lead time before a slot can be booked. Slots starting before `now + minimumNoticeMinutes` are dropped. Must be non-negative. |
+| `maximumAdvanceDays` | `number` | none | How far ahead bookings are allowed, in whole calendar days. Slots starting at or after the same wall-clock time that many days from `now` (in `timezone`) are dropped. Must be a positive integer. |
+| `now` | `Date \| string` | `new Date()` | Reference "current time" for the two options above. Set it to make output deterministic, or to gate against a server clock. Ignored when neither option is set. |
 | `labelFormatter` | `(slot, index, durationMinutes) => string` | none | Callback to attach a custom label to each slot's metadata. Return `undefined` to skip. |
+
+The booking-window options apply to every generator. Filtering is on each slot's
+**start**, and the bookable span is half-open: a slot starting exactly at the
+notice boundary is kept, one starting exactly at the advance cutoff is not.
+Unbookable slots are removed *before* `maxSlots` is applied, so the cap counts
+bookable slots only. See [Booking windows](/docs/scheduling#booking-windows).
 
 ## Additional `DailyTimeslotConfig` options
 

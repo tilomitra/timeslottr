@@ -73,6 +73,30 @@ export interface TimeslotGenerationConfig {
   day?: DateValue;
   minimumSlotDurationMinutes?: number;
   maxSlots?: number;
+  /**
+   * Reference "current time" for the booking window options below. Defaults to
+   * `new Date()`. Pass an explicit value to make generation deterministic in
+   * tests, or to gate against a server clock rather than the caller's.
+   *
+   * Ignored unless `minimumNoticeMinutes` or `maximumAdvanceDays` is set.
+   */
+  now?: DateValue;
+  /**
+   * Minimum lead time before a slot can be booked. Slots starting earlier than
+   * `now + minimumNoticeMinutes` are dropped — e.g. `120` for "no bookings
+   * within two hours".
+   *
+   * Filtering is on the slot's **start**; a slot that has already begun is
+   * never bookable regardless of when it ends.
+   */
+  minimumNoticeMinutes?: number;
+  /**
+   * How far into the future bookings are allowed, as a whole number of calendar
+   * days. Slots starting at or after the same wall-clock time
+   * `maximumAdvanceDays` days from `now` (in `timezone`) are dropped — e.g.
+   * `60` for "you can book up to two months out".
+   */
+  maximumAdvanceDays?: number;
   includeEdge?: boolean;
   alignment?: AlignmentStrategy;
   labelFormatter?: LabelFormatter;

@@ -93,5 +93,60 @@ const slots = generateDailyTimeslots(
 
 `Weekday` is an enum that matches `Date.getDay()`, from `SUN` (0) to `SAT` (6).
 
+## Booking windows
+
+A slot being on the calendar doesn't make it bookable. Nobody wants a meeting
+request for ten minutes from now, or one that lands eight months out.
+`minimumNoticeMinutes` and `maximumAdvanceDays` gate the generated slots against
+the clock, and work with every generator:
+
+```ts
+const slots = generateDailyTimeslots(
+  { start: '2024-03-01', end: '2024-06-01' },
+  {
+    range: { start: '09:00', end: '17:00' },
+    slotDurationMinutes: 30,
+    timezone: 'America/New_York',
+
+    minimumNoticeMinutes: 120, // no bookings within the next 2 hours
+    maximumAdvanceDays: 60,    // and nothing more than 60 days out
+  },
+)
+```
+
+`maximumAdvanceDays` counts calendar days rather than 24-hour blocks, so the
+cutoff stays at the same local time across a daylight-saving change. It must be
+a positive whole number.
+
+Filtering is on each slot's **start**, so a slot already in progress is never
+bookable no matter when it ends. The bookable span is half-open: a slot starting
+exactly at the notice boundary is kept, one starting exactly at the advance
+cutoff is not.
+
+Unbookable slots are dropped before `maxSlots` is applied, so `maxSlots: 5`
+gives you five *bookable* slots rather than five candidates that thin out to two.
+Surviving slots are renumbered contiguously from `0`.
+
+### Controlling "now"
+
+Both options are measured from `now`, which defaults to `new Date()`. Set it
+explicitly to make output deterministic in tests, or to gate against a server
+clock instead of the caller's:
+
+```ts
+generateTimeslots({
+  day: '2024-03-15',
+  timezone: 'UTC',
+  range: { start: '09:00', end: '17:00' },
+  slotDurationMinutes: 30,
+  now: '2024-03-15T10:15:00Z',
+  minimumNoticeMinutes: 60,
+})
+// earliest bookable start is 11:15, so the first slot returned is 11:30
+```
+
+When neither option is set, `now` is never read and generation is a pure
+function of the range.
+
 Next, factor in who is actually free. See
 [Multi-party availability](/docs/availability).

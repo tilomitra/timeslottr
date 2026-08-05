@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-08-05
+
+### Added
+- Booking window options, so generators only return slots that are actually bookable. Available on `generateTimeslots`, `generateDailyTimeslots`, and `generateAvailableTimeslots`:
+  - `minimumNoticeMinutes` — required lead time; drops slots starting before `now + minimumNoticeMinutes`.
+  - `maximumAdvanceDays` — how far ahead bookings are allowed, as whole calendar days. The cutoff keeps the same wall-clock time across a DST transition rather than adding 24-hour blocks. Must be a positive integer.
+  - `now` — reference time for both, defaulting to `new Date()`. Pass it for deterministic output or to gate against a server clock. Never read when neither option is set, so generation stays pure otherwise.
+- Filtering is on each slot's start, using the same half-open semantics as the rest of the library: a slot starting exactly at the notice boundary is kept, one starting exactly at the advance cutoff is not.
+- Unbookable slots are dropped before `maxSlots` is applied, so the cap counts bookable slots only, and surviving slots are renumbered contiguously from `0`.
+
 ## [1.1.0] - 2026-06-14
 
 ### Added
@@ -59,7 +69,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ESM and CommonJS dual-package support.
 - TypeScript type definitions included in the package.
 
-[Unreleased]: https://github.com/tilomitra/timeslottr/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/tilomitra/timeslottr/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/tilomitra/timeslottr/compare/v1.1.0...v1.2.0
+[1.1.0]: https://github.com/tilomitra/timeslottr/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/tilomitra/timeslottr/compare/v0.4.0...v1.0.0
 [0.4.0]: https://github.com/tilomitra/timeslottr/compare/v0.2.0...v0.4.0
 [0.2.0]: https://github.com/tilomitra/timeslottr/compare/v0.1.0...v0.2.0

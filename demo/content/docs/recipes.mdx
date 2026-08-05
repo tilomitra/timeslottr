@@ -99,3 +99,24 @@ generateTimeslots({
   maxSlots: 8, // stop after the first 8
 })
 ```
+
+## Only offer slots someone can actually book
+
+Give yourself lead time to prepare, and stop people booking a year out:
+
+```ts
+generateDailyTimeslots(
+  { start: '2024-03-01', end: '2024-06-01' },
+  {
+    range: { start: '09:00', end: '17:00' },
+    slotDurationMinutes: 30,
+    timezone: 'America/New_York',
+    minimumNoticeMinutes: 120, // nothing sooner than 2 hours from now
+    maximumAdvanceDays: 60, // nothing further out than 60 days
+  },
+)
+```
+
+Unbookable slots are dropped before `maxSlots` is applied, so combining the two
+still gives you a full page of results. Pass `now` to pin the reference time in
+tests. See [Booking windows](/docs/scheduling#booking-windows).

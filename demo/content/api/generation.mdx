@@ -29,9 +29,15 @@ const slots = generateTimeslots({
   alignment: 'start',
   includeEdge: true,
   maxSlots: 50,
+  minimumNoticeMinutes: 120, // no bookings within the next 2 hours
+  maximumAdvanceDays: 60, // nothing more than 60 days out
   labelFormatter: (slot, index) => `Slot #${index + 1}`,
 })
 ```
+
+The booking-window options (`minimumNoticeMinutes`, `maximumAdvanceDays`, and
+the `now` they are measured from) apply to all three generators. See
+[Booking windows](/docs/scheduling#booking-windows).
 
 ## `generateDailyTimeslots`
 
