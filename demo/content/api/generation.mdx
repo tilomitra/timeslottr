@@ -11,8 +11,8 @@ description: generateTimeslots, generateDailyTimeslots, and generateAvailableTim
 generateTimeslots(config: TimeslotGenerationConfig): Timeslot[]
 ```
 
-Generates time slots for a single day or custom window. The primary entry point
-for most use cases. See [Configuration](/api/configuration) for every option.
+Generates time slots for a single day or custom window. Most callers only need
+this one. See [Configuration](/api/configuration) for every option.
 
 ```ts
 import { generateTimeslots } from 'timeslottr'
@@ -113,5 +113,5 @@ const slots = generateAvailableTimeslots({
 
 Busy times accept the same formats as `range` and `excludedWindows`
 (`string | Date | { date, time }`). A fully booked day returns `[]`. An empty
-`participantsBusy` entry means that person is free for the whole window. See the
-[availability guide](/docs/availability) for the longer walkthrough.
+`participantsBusy` entry means that person is free for the whole window. See
+[Multi-party availability](/docs/availability) for the longer walkthrough.

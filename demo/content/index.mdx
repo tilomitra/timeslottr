@@ -7,35 +7,39 @@ import { Tabs, Cards } from 'nextra/components'
 
 # timeslottr
 
-timeslottr is a zero-dependency TypeScript library for **interval arithmetic over
-calendar time**. It turns working hours into bookable slots, subtracts
+timeslottr is a zero-dependency TypeScript library for interval arithmetic over
+calendar time. It turns working hours into bookable slots, subtracts
 already-booked events, and intersects multiple participants' calendars to find
 the windows where everyone is free.
 
-It's the engine layer that scheduling products like Calendly and cal.com are built
-on — the interval math, without the calendar sync, storage, or UI.
+It does the interval math that sits underneath a scheduling product like Calendly
+or cal.com. The calendar sync, storage, and UI stay yours.
+
+## What can you use it for?
+
+- A booking page. Turn "Monday to Thursday, 9 to 5, 30-minute meetings" into the
+  list of times a customer can click.
+- Interview loops, where the slot has to work for the candidate and three
+  interviewers at once.
+- Appointments that need prep or cleanup time around them, using the before and
+  after buffers.
+- Room, court, and equipment reservations. Same interval math, different noun.
+- Shift and on-call rotas built from a per-weekday schedule across a date range.
+- Delivery and pickup windows, with a cap on how far ahead people can book so
+  nobody reserves a slot six months out.
 
 ## Features
 
-- **Slot generation.** Produce fixed-duration slots from a daily range or a
-  per-weekday `Map`, with a configurable step interval (`slotIntervalMinutes`
-  for overlapping or spaced starts), leading/trailing buffers, excluded windows,
-  edge alignment (`start` / `end` / `center`), and a `maxSlots` cap.
-- **Availability math.** `subtract` (availability − busy) and `intersect`
-  (overlap across N participants) run as sort-then-sweep passes —
-  `O((n + m) log m)` and `O(total · log)` — instead of the nested loops these
-  features are usually hand-rolled with.
-- **Timezone & DST correct.** Built on the platform `Intl.DateTimeFormat` API, so
-  a day that springs forward or falls back yields the right number of real slots.
-  No `dayjs`, no `date-fns`, no IANA database in your bundle.
-- **Half-open intervals.** Every interval is `[start, end)`. A slot ending at
-  10:00 does not collide with one starting at 10:00, which eliminates the
-  off-by-one errors that silently corrupt bookings.
-- **Typed and portable.** Fully typed, dual ESM/CJS, zero runtime dependencies.
-  Runs in Node, edge runtimes, and browsers.
-
-timeslottr is an engine, not a booking product. It hands you `Date`-based interval
-results; calendar sync and storage stay yours.
+- **Slot generation.** Split a working day into fixed-length slots, with
+  per-weekday hours, buffers, breaks, and overlapping starts.
+- **Availability math.** Remove the time that is already booked, then keep only
+  the windows where everyone is free.
+- **Timezones and daylight saving.** Handled with what Node and browsers already
+  ship, so no date library and no timezone database in your bundle.
+- **Half-open intervals.** A slot that ends at 10:00 does not collide with one
+  that starts at 10:00, so adjacent slots never double-book.
+- **Typed and portable.** Fully typed, no runtime dependencies, ES modules and
+  CommonJS. Runs in Node, edge runtimes, and browsers.
 
 ## Installation
 
@@ -111,9 +115,9 @@ const slots = generateAvailableTimeslots({
 ## Where to next
 
 <Cards>
-  <Cards.Card title="Core Concepts" href="/docs/core-concepts" arrow />
-  <Cards.Card title="Scheduling Guide" href="/docs/scheduling" arrow />
-  <Cards.Card title="Multi-party Availability" href="/docs/availability" arrow />
-  <Cards.Card title="API Reference" href="/api/generation" arrow />
-  <Cards.Card title="Live Playground" href="/playground" arrow />
+  <Cards.Card title="Core concepts" href="/docs/core-concepts" arrow />
+  <Cards.Card title="Scheduling" href="/docs/scheduling" arrow />
+  <Cards.Card title="Multi-party availability" href="/docs/availability" arrow />
+  <Cards.Card title="API reference" href="/api/generation" arrow />
+  <Cards.Card title="Playground" href="/playground" arrow />
 </Cards>

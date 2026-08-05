@@ -27,9 +27,9 @@ generators). All options except `range` and `slotDurationMinutes` are optional.
 | `now` | `Date \| string` | `new Date()` | Reference "current time" for the two options above. Set it to make output deterministic, or to gate against a server clock. Ignored when neither option is set. |
 | `labelFormatter` | `(slot, index, durationMinutes) => string` | none | Callback to attach a custom label to each slot's metadata. Return `undefined` to skip. |
 
-The booking-window options apply to every generator. Filtering is on each slot's
-**start**, and the bookable span is half-open: a slot starting exactly at the
-notice boundary is kept, one starting exactly at the advance cutoff is not.
+The booking-window options apply to every generator. Filtering looks at each
+slot's start time, and the bookable span is half-open: a slot starting exactly at
+the notice boundary is kept, one starting exactly at the advance cutoff is not.
 Unbookable slots are removed *before* `maxSlots` is applied, so the cap counts
 bookable slots only. See [Booking windows](/docs/scheduling#booking-windows).
 
@@ -41,7 +41,7 @@ automatically per day), plus:
 | Option | Type | Default | Description |
 | --- | --- | --- | --- |
 | `range` | `TimeslotRangeInput \| Map<Weekday, TimeslotRangeInput \| null>` | _required_ | Either a single range applied to every day, or a `Map` for per-weekday schedules. Weekdays absent from the map are skipped. |
-| `maxDays` | `number` | `10000` | Safety limit on the number of calendar days to iterate, preventing runaway loops for large ranges. |
+| `maxDays` | `number` | `10000` | Safety limit on the number of calendar days to iterate, so a bad period can't loop forever. |
 
 ## Additional `AvailableTimeslotConfig` options
 

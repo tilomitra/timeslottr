@@ -18,8 +18,8 @@ subtract(source: Interval[], busy: Interval[]): Interval[]
 Removes the `busy` intervals from the `source` (available) intervals and returns
 the free time that is left. The `busy` list can be unsorted, overlapping, or
 touching boundaries. A busy window in the middle of a source splits it in two.
-Touching boundaries do not count as overlap. It runs in `O((n + m) log m)` with a
-sort and a sweep, not a nested scan.
+Touching boundaries do not count as overlap. It sorts once and sweeps, so it runs
+in `O((n + m) log m)`.
 
 ```ts
 import { subtract } from 'timeslottr'
@@ -40,8 +40,7 @@ intersect(intervalSets: Interval[][]): Interval[]
 Given one set of free intervals per person, it returns the windows where all of
 them overlap. With no sets it returns `[]`. With one set it returns a merged copy.
 If any set is empty the result is `[]`, since a person with no availability blocks
-everyone. It runs in `O(total intervals · log)` with a sweep, not pairwise nested
-loops.
+everyone. It sweeps all sets at once, in `O(total intervals · log)`.
 
 ```ts
 import { intersect } from 'timeslottr'
