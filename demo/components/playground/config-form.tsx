@@ -119,7 +119,7 @@ export function ConfigForm({
     <div className="space-y-6">
       <div>
         <h3 className="font-semibold leading-none tracking-tight mb-2">Configuration</h3>
-        <p className="text-sm text-muted-foreground">Adjust the settings to customize slot generation.</p>
+        <p className="text-sm text-muted-foreground">Every field here maps to one config option.</p>
       </div>
 
       {/* Mode toggle */}

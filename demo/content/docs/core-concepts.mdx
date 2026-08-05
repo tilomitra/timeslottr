@@ -1,14 +1,11 @@
 ---
-title: Core Concepts
+title: Core concepts
 description: Half-open intervals, the Timeslot shape, and how timezones and DST are handled.
 ---
 
 import { Callout } from 'nextra/components'
 
-# Core Concepts
-
-A few ideas are worth understanding before you go further: half-open intervals,
-the `Timeslot` shape, and how time zones are handled.
+# Core concepts
 
 ## Half-open intervals `[start, end)`
 
@@ -62,8 +59,8 @@ converted to the correct UTC instant. This runs on the platform `Intl` API, so
 there is no date library involved.
 
 Daylight saving is handled for you. On a spring-forward day the 2:00 to 3:00
-wall-clock hour does not exist, so a 00:00 to 06:00 range produces the right
-number of real slots:
+wall-clock hour does not exist, so a 00:00 to 06:00 range produces five hours of
+slots, not six:
 
 ```ts
 const slots = generateTimeslots({
@@ -81,5 +78,5 @@ slots.length // 10: six wall-clock hours, but only five real ones
 </Callout>
 
 Time-only boundaries need a calendar date to anchor them. Pass `day` for a single
-day, or let `generateDailyTimeslots` set it per day. See the
-[scheduling guide](/docs/scheduling).
+day, or let `generateDailyTimeslots` set it per day. See
+[Scheduling](/docs/scheduling).

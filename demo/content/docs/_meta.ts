@@ -1,6 +1,6 @@
 export default {
-  'core-concepts': 'Core Concepts',
+  'core-concepts': 'Core concepts',
   scheduling: 'Scheduling',
-  availability: 'Multi-party Availability',
+  availability: 'Multi-party availability',
   recipes: 'Recipes',
 }

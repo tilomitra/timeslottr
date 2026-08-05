@@ -118,8 +118,8 @@ const slots = generateDailyTimeslots(
 cutoff stays at the same local time across a daylight-saving change. It must be
 a positive whole number.
 
-Filtering is on each slot's **start**, so a slot already in progress is never
-bookable no matter when it ends. The bookable span is half-open: a slot starting
+Filtering looks at each slot's start time, never its end, so a slot already in
+progress is never bookable. The bookable span is half-open: a slot starting
 exactly at the notice boundary is kept, one starting exactly at the advance
 cutoff is not.
 

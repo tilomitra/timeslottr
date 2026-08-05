@@ -1,5 +1,5 @@
 export default {
-  index: 'Getting Started',
+  index: 'Getting started',
   docs: 'Guide',
   api: 'Reference',
   playground: 'Playground',

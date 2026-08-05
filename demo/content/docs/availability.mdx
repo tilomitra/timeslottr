@@ -1,24 +1,24 @@
 ---
-title: Multi-party Availability
+title: Multi-party availability
 description: Subtract booked time and intersect across people to find slots that work for everyone.
 ---
 
 import { Callout } from 'nextra/components'
 
-# Multi-party Availability
+# Multi-party availability
 
 Generating slots tells you when a schedule is open. Booking a meeting needs more
 than that: you have to know when everyone is actually free. That means removing
-the time that is already booked and then finding the overlap across several
-people's calendars.
+the time that is already booked, then finding the overlap across several people's
+calendars.
 
-This is the part teams usually hand-roll, and it is easy to get wrong. timeslottr
-gives you two interval functions for it, [`subtract`](/api/availability) and
+Most teams hand-roll this, and it is easy to get wrong. timeslottr gives you two
+interval functions for it, [`subtract`](/api/availability) and
 [`intersect`](/api/availability), plus [`generateAvailableTimeslots`](/api/generation),
 which wires them into the slot generator.
 
 Everything here uses half-open `[start, end)` intervals (see
-[Core Concepts](/docs/core-concepts)), so a slot that ends when a meeting starts
+[Core concepts](/docs/core-concepts)), so a slot that ends when a meeting starts
 is not treated as a conflict.
 
 ## The pipeline
@@ -72,6 +72,7 @@ a `{ date, time }` object.
 
 Sometimes you already have free and busy intervals and just want the math. Both
 functions work on resolved `Interval` objects (`{ start: Date; end: Date }`).
+The [API reference](/api/availability) covers their complexity and edge cases.
 
 ### subtract: availability minus bookings
 
@@ -86,8 +87,7 @@ const free = subtract(
 ```
 
 Busy intervals can be unsorted, overlap each other, or touch boundaries. A busy
-window in the middle of a source splits it in two. It runs in `O((n + m) log m)`,
-not the nested loop people usually reach for first.
+window in the middle of a source splits it in two.
 
 ### intersect: a time for the whole team
 
@@ -104,7 +104,7 @@ const team = intersect([
 Given one set of free intervals per person, `intersect` returns the windows where
 all of them overlap. With no sets it returns `[]`. With one set it returns a
 merged copy. If any set is empty, the result is `[]`, since a person with no
-availability blocks everyone. It runs in `O(total intervals · log)`.
+availability blocks everyone.
 
 ## Try it
 
