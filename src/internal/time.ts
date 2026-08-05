@@ -121,6 +121,17 @@ export function toCalendarDateFromInstant(date: Date, timeZone?: string): Calend
   return { year, month, day };
 }
 
+const DAYS_IN_MONTH = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+
+function isLeapYear(year: number): boolean {
+  return (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0;
+}
+
+/** Length of a 1-indexed month, accounting for leap years. */
+function daysInMonth(year: number, month: number): number {
+  return month === 2 && isLeapYear(year) ? 29 : DAYS_IN_MONTH[month - 1]!;
+}
+
 export function calendarFromDateOnlyString(value: string): CalendarDate {
   const trimmed = value.trim();
   if (!isDateOnlyString(trimmed)) {
@@ -135,7 +146,10 @@ export function calendarFromDateOnlyString(value: string): CalendarDate {
   if (month < 1 || month > 12) {
     throw new RangeError(`Month out of range in date string: ${value}`);
   }
-  if (day < 1 || day > 31) {
+  // Bound by the real length of the month. A day of 1–31 alone lets a date like
+  // 2025-02-30 through, which then rolls over into March — an exclusion written
+  // for it would silently apply to the wrong day, or to no day at all.
+  if (day < 1 || day > daysInMonth(year, month)) {
     throw new RangeError(`Day out of range in date string: ${value}`);
   }
 
@@ -151,6 +165,36 @@ export function addDaysToCalendar(date: CalendarDate, days: number): CalendarDat
   };
 }
 
+/**
+ * Parse a free-form string into an instant, leaving the actual parsing to the
+ * engine.
+ *
+ * Strings that carry no time are rejected rather than parsed. The engine
+ * resolves a zoneless string against the *system* zone, not the configured
+ * `timezone`, so `"2025-3-5"` becomes local midnight and then reads back as the
+ * 4th or the 5th depending on where the code runs. Date-only values have an
+ * unambiguous path already — the strict `YYYY-MM-DD` form — so point callers at
+ * it instead of silently resolving to the wrong day.
+ */
+export function parseInstantFromString(value: string, label: string): Date {
+  const trimmed = value.trim();
+  const normalized = trimmed.includes('T') ? trimmed : trimmed.replace(' ', 'T');
+  const parsed = new Date(normalized);
+
+  if (Number.isNaN(parsed.getTime())) {
+    throw new TypeError(`Invalid ${label} string: ${value}`);
+  }
+
+  if (!/\d:\d/.test(trimmed)) {
+    throw new TypeError(
+      `Ambiguous ${label} string: ${value}. Write a date-only value as YYYY-MM-DD, ` +
+      'which is interpreted in the configured timezone, or include an explicit time.'
+    );
+  }
+
+  return parsed;
+}
+
 export function calendarFromDateValue(value: DateValue, timeZone?: string): CalendarDate {
   if (isDate(value)) {
     return toCalendarDateFromInstant(new Date(value.getTime()), timeZone);
@@ -162,12 +206,7 @@ export function calendarFromDateValue(value: DateValue, timeZone?: string): Cale
       return calendarFromDateOnlyString(trimmed);
     }
 
-    const normalized = trimmed.includes('T') ? trimmed : trimmed.replace(' ', 'T');
-    const parsed = new Date(normalized);
-    if (Number.isNaN(parsed.getTime())) {
-      throw new TypeError(`Invalid date string: ${value}`);
-    }
-    return toCalendarDateFromInstant(parsed, timeZone);
+    return toCalendarDateFromInstant(parseInstantFromString(value, 'date'), timeZone);
   }
 
   throw new TypeError('Unsupported date value');
@@ -189,12 +228,7 @@ export function parseDateValue(value: DateValue, timeZone?: string, treatDateOnl
       return makeDateFromCalendarAndTime(calendar, { hour: 0, minute: 0, second: 0 }, timeZone);
     }
 
-    const normalized = trimmed.includes('T') ? trimmed : trimmed.replace(' ', 'T');
-    const parsed = new Date(normalized);
-    if (Number.isNaN(parsed.getTime())) {
-      throw new TypeError(`Invalid date string: ${value}`);
-    }
-    return parsed;
+    return parseInstantFromString(value, 'date');
   }
 
   throw new TypeError('Unsupported date value');

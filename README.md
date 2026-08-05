@@ -135,6 +135,12 @@ const slots = generateDailyTimeslots(
 | `now` | `string \| Date` | Reference "current time" for the two options above. Defaults to `new Date()`. |
 | `labelFormatter` | `({ start, end }, index, durationMinutes) => string` | Optional metadata helper for injecting labels or display text. |
 
+Write date-only values as `YYYY-MM-DD`. That form is resolved in `timezone`;
+looser ones like `2025-3-5` or `2025/03/05` are rejected, because the engine
+would resolve them against the machine's local zone instead and land a day off.
+Strings carrying an explicit time are still parsed as-is. Days beyond the length
+of their month (`2025-02-30`) are rejected rather than rolling into the next one.
+
 Each generated `Timeslot` contains immutable `Date` instances and optional metadata:
 
 ```ts

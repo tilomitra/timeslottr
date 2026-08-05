@@ -61,6 +61,13 @@ You can write a boundary as a time-only string (`'09:00'`), a full ISO string, a
 converted to the correct UTC instant. This runs on the platform `Intl` API, so
 there is no date library involved.
 
+Date-only values must be written `YYYY-MM-DD`, which is resolved in `timezone`.
+Looser forms like `'2025-3-5'` or `'2025/03/05'` are rejected: the engine would
+resolve them against the machine's local zone rather than `timezone`, so the same
+input would mean different days on different machines. Strings that carry an
+explicit time are unaffected. A day past the end of its month (`'2025-02-30'`) is
+also rejected instead of rolling over into the next month.
+
 Daylight saving is handled for you. On a spring-forward day the 2:00 to 3:00
 wall-clock hour does not exist, so a 00:00 to 06:00 range produces the right
 number of real slots:
