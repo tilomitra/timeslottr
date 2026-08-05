@@ -13,6 +13,7 @@ A zero-dependency TypeScript library for generating time slots. Dual ESM/CJS bui
 - `src/generate-daily-timeslots.ts` — multi-day slot generation, Weekday enum
 - `src/availability.ts` — multi-party availability layer: `subtract` (availability − busy), `intersect` (overlap across participants), `generateAvailableTimeslots` (compose subtract/intersect + existing slotter). Half-open `[start, end)` intervals on the `Interval` type.
 - `src/internal/` — internal implementation (boundaries, config validation, exclusions, slot algorithm, time utils)
+- `src/internal/booking-window.ts` — resolves `minimumNoticeMinutes` / `maximumAdvanceDays` / `now` into a half-open `[earliestStartMs, latestStartMs)` span. Called from `validateConfig`, so all three generators inherit it; enforced in `pushSlot` (`internal/slots.ts`) *before* the `maxSlots` check, so unbookable slots never consume the cap.
 - `demo/` — **Nextra 4** docs site (Next.js 14 App Router, deployed to Vercel at timeslottr.vercel.app)
 - `demo/content/` — all docs as MDX, ordered by `_meta.ts` files: `index.mdx` (Getting Started), `docs/*` (Guide: core-concepts, scheduling, availability, recipes), `api/*` (Reference: generation, availability, utilities, configuration, types), `playground.mdx`
 - `demo/app/layout.tsx` — Nextra `Layout`/`Navbar`/`Footer`; `app/[[...mdxPath]]/page.tsx` — Nextra catch-all route; `mdx-components.tsx` — MDX component map

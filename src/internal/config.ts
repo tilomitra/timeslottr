@@ -1,4 +1,5 @@
 import { MILLIS_PER_MINUTE } from './constants.js';
+import { resolveBookingWindow, type BookingWindow } from './booking-window.js';
 import type {
   AlignmentStrategy,
   LabelFormatter,
@@ -13,6 +14,8 @@ export interface NormalizedConfig {
   alignment: AlignmentStrategy;
   maxSlots?: number;
   labelFormatter?: LabelFormatter;
+  /** Resolved notice/advance window, when either option is configured. */
+  bookingWindow?: BookingWindow;
 }
 
 export function validateConfig(config: TimeslotGenerationConfig): NormalizedConfig {
@@ -56,6 +59,7 @@ export function validateConfig(config: TimeslotGenerationConfig): NormalizedConf
     includeEdge,
     alignment,
     maxSlots: config.maxSlots,
-    labelFormatter: config.labelFormatter
+    labelFormatter: config.labelFormatter,
+    bookingWindow: resolveBookingWindow(config)
   };
 }

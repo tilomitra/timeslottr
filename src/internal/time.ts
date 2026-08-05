@@ -95,19 +95,30 @@ function zonedTimeToUtc(calendar: CalendarDate, time: TimeOfDay, timeZone: strin
   return adjusted;
 }
 
-export function toCalendarDateFromInstant(date: Date, timeZone?: string): CalendarDate {
+/**
+ * Break an instant down into its wall-clock date *and* time in `timeZone`
+ * (local time when no zone is given). The inverse of
+ * {@link makeDateFromCalendarAndTime}.
+ */
+export function toZonedDateTimeFromInstant(date: Date, timeZone?: string): CalendarDate & TimeOfDay {
   if (timeZone) {
     const formatter = getDateTimeFormatter(timeZone);
-    const parts = formatter.formatToParts(date);
-    const { year, month, day } = getCalendarFromParts(parts);
-    return { year, month, day };
+    return getCalendarFromParts(formatter.formatToParts(date));
   }
 
   return {
     year: date.getFullYear(),
     month: date.getMonth() + 1,
-    day: date.getDate()
+    day: date.getDate(),
+    hour: date.getHours(),
+    minute: date.getMinutes(),
+    second: date.getSeconds()
   };
+}
+
+export function toCalendarDateFromInstant(date: Date, timeZone?: string): CalendarDate {
+  const { year, month, day } = toZonedDateTimeFromInstant(date, timeZone);
+  return { year, month, day };
 }
 
 export function calendarFromDateOnlyString(value: string): CalendarDate {

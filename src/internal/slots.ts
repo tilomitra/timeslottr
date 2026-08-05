@@ -12,6 +12,13 @@ function pushSlot(
   endMs: number,
   config: NormalizedConfig
 ): void {
+  // Applied before the maxSlots check so unbookable slots never consume the
+  // cap — `maxSlots: 5` should yield five *bookable* slots.
+  const { bookingWindow } = config;
+  if (bookingWindow && (startMs < bookingWindow.earliestStartMs || startMs >= bookingWindow.latestStartMs)) {
+    return;
+  }
+
   if (config.maxSlots !== undefined && slots.length >= config.maxSlots) {
     return;
   }

@@ -130,6 +130,9 @@ const slots = generateDailyTimeslots(
 | `minimumSlotDurationMinutes` | `number` | Minimum allowable length for partial edge slots. Defaults to `slotDurationMinutes`. |
 | `includeEdge` | `boolean` | Include truncated edge slots when their duration is above the minimum. Defaults to `true`. |
 | `maxSlots` | `number` | Hard limit on the number of generated slots. |
+| `minimumNoticeMinutes` | `number` | Lead time before a slot can be booked. Slots starting sooner than `now + minimumNoticeMinutes` are dropped. |
+| `maximumAdvanceDays` | `number` | How far ahead bookings are allowed, in whole calendar days. Slots starting at or after that point are dropped. |
+| `now` | `string \| Date` | Reference "current time" for the two options above. Defaults to `new Date()`. |
 | `labelFormatter` | `({ start, end }, index, durationMinutes) => string` | Optional metadata helper for injecting labels or display text. |
 
 Each generated `Timeslot` contains immutable `Date` instances and optional metadata:
@@ -309,6 +312,43 @@ const team = intersect([
 ```
 
 `subtract` runs in `O((n + m) log m)` and `intersect` in `O(total intervals · log)`, both with a sort and a sweep rather than a nested scan. Slotting (duration, interval, alignment, buffers, labels, `maxSlots`, and timezone/DST handling) is identical to `generateTimeslots`.
+
+## Booking windows
+
+A slot can be on the calendar without being bookable: nobody wants a meeting
+request for ten minutes from now, or one that lands eight months out. Two
+options gate the generated slots against the clock, and they work with all three
+generators.
+
+```ts
+import { generateTimeslots } from 'timeslottr';
+
+const slots = generateTimeslots({
+  day: '2024-01-01',
+  range: { start: '09:00', end: '17:00' },
+  slotDurationMinutes: 30,
+
+  minimumNoticeMinutes: 120,  // no bookings within the next 2 hours
+  maximumAdvanceDays: 60      // and nothing more than 60 days out
+});
+```
+
+- **`minimumNoticeMinutes`** — drops slots starting before `now + minimumNoticeMinutes`.
+- **`maximumAdvanceDays`** — drops slots starting at or after the same wall-clock time that many calendar days from `now`, in your configured `timezone`. Going through the calendar rather than adding 24-hour blocks keeps "60 days out" at the same local time across a daylight-saving change. Must be a positive whole number.
+- **`now`** — the reference time, defaulting to `new Date()`. Pass it explicitly to make output deterministic in tests, or to gate against a server clock rather than the caller's.
+
+Filtering is on each slot's **start**, so a slot already in progress is never
+bookable no matter when it ends. The bookable span is half-open — a slot
+starting exactly at the notice boundary is kept, one starting exactly at the
+advance cutoff is not — matching the interval semantics used everywhere else in
+the library.
+
+Unbookable slots are removed before `maxSlots` is applied, so `maxSlots: 5`
+yields five *bookable* slots rather than five candidates that may thin out to
+two. Surviving slots are renumbered contiguously from `0`.
+
+If neither option is set, `now` is never read and generation stays a pure
+function of the range.
 
 ## Development
 
