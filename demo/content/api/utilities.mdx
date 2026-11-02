@@ -5,13 +5,26 @@ description: createTimeslot, overlaps, contains, mergeSlots, findGaps, and JSON 
 
 # Utilities
 
+These helpers let you check, combine, and save slots you already have.
+They work with `Date` objects; timestamps in the examples below use UTC (`Z`).
+
+| I want to… | Use |
+| --- | --- |
+| Build a slot from two dates | `createTimeslot` |
+| Check whether two meetings conflict | `overlaps` |
+| Check whether a moment falls inside a slot | `contains` |
+| Combine bookings into continuous blocks | `mergeSlots` |
+| Find open time between bookings | `findGaps` |
+| Send slots as JSON and restore them | `timeslotToJSON` / `timeslotFromJSON` |
+
 ## `createTimeslot`
 
 ```ts
 createTimeslot(start: Date, end: Date): Timeslot
 ```
 
-Creates a validated `Timeslot`. Throws `TypeError` if either date is invalid, or
+Use this when you already have the start and end of a meeting. It creates a
+validated `Timeslot` with copied dates and no metadata. Throws `TypeError` if either date is invalid, or
 `RangeError` if `end` is not after `start`.
 
 ```ts
@@ -29,7 +42,8 @@ const slot = createTimeslot(
 overlaps(a: Timeslot, b: Timeslot): boolean
 ```
 
-Returns `true` if two timeslots overlap. Uses half-open comparison, so slots that
+Use this to check for a conflict between two meetings. It returns `true` if
+they share any time. Uses half-open comparison, so slots that
 merely touch at a boundary do **not** overlap.
 
 ```ts
@@ -47,7 +61,8 @@ overlaps(a, b) // true
 contains(slot: Timeslot, date: Date): boolean
 ```
 
-Returns `true` if a date falls within the slot. Start is inclusive, end exclusive.
+Use this to check whether a moment is during a meeting. It returns `true` at
+the start and during the slot, and `false` at the exact end.
 
 ```ts
 import { contains, createTimeslot } from 'timeslottr'
@@ -67,7 +82,8 @@ contains(slot, new Date('2024-03-15T10:00:00Z')) // false (end is exclusive)
 mergeSlots(slots: Timeslot[]): Timeslot[]
 ```
 
-Sorts slots by start time and merges any overlapping or adjacent slots into
+Use this to turn a list of bookings into a smaller list of occupied blocks.
+It sorts slots by start time and merges any overlapping or adjacent slots into
 continuous blocks. Merged slots do not carry metadata from the originals.
 
 ```ts
@@ -87,7 +103,10 @@ const merged = mergeSlots([
 findGaps(slots: Timeslot[], range: { start: Date; end: Date }): Timeslot[]
 ```
 
-Finds the free/unbooked periods within a range, given a list of booked slots.
+Use this when you have bookings and want the open windows between them.
+It returns gaps of any length, not fixed-duration meeting options. An empty
+booking list leaves the whole range free. For 30-minute options around bookings,
+use [`generateAvailableTimeslots`](/api/generation#generateavailabletimeslots).
 
 ```ts
 import { findGaps, createTimeslot } from 'timeslottr'
@@ -114,10 +133,15 @@ Converts a `Timeslot` to a JSON-safe object with ISO 8601 string dates. Preserve
 metadata if present.
 
 ```ts
-import { timeslotToJSON } from 'timeslottr'
+import { createTimeslot, timeslotToJSON } from 'timeslottr'
 
+const slot = createTimeslot(
+  new Date('2024-03-15T09:00:00Z'),
+  new Date('2024-03-15T09:30:00Z'),
+)
 const json = timeslotToJSON(slot)
-// { start: "2024-03-15T09:00:00.000Z", end: "2024-03-15T09:30:00.000Z", metadata: { ... } }
+// { start: '2024-03-15T09:00:00.000Z', end: '2024-03-15T09:30:00.000Z' }
+const body = JSON.stringify(json) // ready for storage or an API request
 ```
 
 ## `timeslotFromJSON`
@@ -127,7 +151,8 @@ timeslotFromJSON(json: TimeslotJSON): Timeslot
 ```
 
 Parses a `TimeslotJSON` back into a `Timeslot` with real `Date` instances.
-Validates the dates and the `start < end` constraint.
+Validates the dates and checks that the end is after the start. Use this when
+reading a saved slot: `JSON.parse` by itself leaves the dates as strings.
 
 ```ts
 import { timeslotFromJSON } from 'timeslottr'

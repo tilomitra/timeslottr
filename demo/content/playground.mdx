@@ -7,7 +7,36 @@ import { Playground } from '../components/playground/playground'
 
 # Playground
 
-Change the settings below and watch the slots, and their raw JSON, update as you
-go. Everything runs in your browser against the real `timeslottr` package.
+Try a schedule here before putting it into your application. Change the settings
+and the generated slots update automatically. Everything runs in your browser
+using the published `timeslottr` package.
+
+## Try a simple schedule
+
+1. Choose **Single Day**, then set a date and an explicit timezone.
+2. Set working hours to 09:00–10:00 and the slot duration to 30 minutes.
+3. Leave the interval blank to get two back-to-back options.
+4. Change the interval to 15 minutes to see overlapping options.
+5. Add an exclusion inside the window and see which options remain.
+
+For a repeating schedule, switch to **Multi-Day** and enable the weekdays you
+want to offer. The end date is midnight at the start of that day, so choose the
+following date to include a full final day.
+
+## Read the results
+
+**Generated Slots** shows the meeting options. **JSON Output** shows their start
+and end values as ISO strings, plus metadata such as duration. A trailing `Z`
+means UTC; the [timezone guide](/docs/core-concepts#timezones-and-dst) explains
+how to display the same moment in local time.
+
+No slots? Check that the window is long enough for a full meeting and that
+exclusions haven't removed the available time. In multi-day mode, check that at
+least one enabled weekday falls inside the period. **Include edge slots** only
+allows shorter options when they also meet the minimum slot duration; it does
+not shorten meetings by default.
+
+## Explore the schedule
+
 
 <Playground />

@@ -1,89 +1,193 @@
 ---
 title: Core concepts
-description: Half-open intervals, the Timeslot shape, and how timezones and DST are handled.
+description: Learn how working hours become slots, what the results contain, and how to work with dates and timezones.
 ---
 
 import { Callout } from 'nextra/components'
 
 # Core concepts
 
+Start with a simple question: “When can someone book a 30-minute meeting?”
+You give timeslottr your working hours and the meeting length, and it returns
+the possible start and end times. These are the ideas you'll use along the way.
+
+## From working hours to slots
+
+A **range** is the window you want to offer. A **slot** is one possible meeting
+inside that window. For example, an hour of working time can hold two
+30-minute slots:
+
+```text
+Working hours:  09:00 ─────────────────── 10:00
+Slots:         [09:00 → 09:30) [09:30 → 10:00)
+```
+
+Here's that schedule in code:
+
+```ts
+import { generateTimeslots } from 'timeslottr'
+
+const slots = generateTimeslots({
+  day: '2024-01-01',
+  timezone: 'America/New_York',
+  range: { start: '09:00', end: '10:00' },
+  slotDurationMinutes: 30,
+})
+
+slots.length // 2
+```
+
+`day` answers “which date?”, `timezone` answers “whose 9am?”, and `range`
+sets the working hours. `slotDurationMinutes` sets the length of each meeting.
+Breaks and bookings can remove time from that range before slots are generated.
+
+These examples use fixed dates so you can reproduce the results. Past dates
+still produce slots unless you enable [booking windows](/docs/scheduling#booking-windows).
+
+## The `Timeslot` shape
+
+Each result has a `start` and an `end`, both JavaScript `Date` objects.
+The generators also attach `metadata` describing the slot:
+
+```ts
+// The first slot from the example above looks like this:
+const firstSlot = {
+  start: new Date('2024-01-01T14:00:00.000Z'),
+  end: new Date('2024-01-01T14:30:00.000Z'),
+  metadata: {
+    index: 0,
+    durationMinutes: 30,
+  },
+}
+```
+
+The output shows 14:00 UTC because that's the same moment as 09:00 in New York
+on January 1. The timezone section below shows how to display it as local time.
+
+- `index` starts at `0`. For multi-day generation, it restarts each day.
+- `durationMinutes` is the slot's actual length in elapsed minutes.
+- `label` is included if your `labelFormatter` returns one.
+
+The public `Timeslot` type makes `metadata` optional, so you can also work with
+slots that only have `start` and `end`. See [Types](/api/types) for the full definition.
+
+<Callout type="info">
+  Sending slots to an API or saving them as JSON? Use
+  [`timeslotToJSON` and `timeslotFromJSON`](/api/utilities) to convert between
+  dates and strings. `JSON.parse` alone does not restore `Date` objects.
+</Callout>
+
 ## Half-open intervals `[start, end)`
 
-Every range, slot, exclusion, and availability window is half-open. The `start`
-is inclusive and the `end` is exclusive.
+A meeting can end at 09:30 and the next one can start at 09:30. They touch,
+but they don't overlap.
+
+That's what **half-open** means: the start belongs to the slot, and the end
+marks where it stops. The notation `[start, end)` is just a short way to write
+that rule. You don't need to adjust times by a second or a millisecond to keep
+adjacent meetings separate.
 
 ```ts
 import { contains, createTimeslot } from 'timeslottr'
 
 const slot = createTimeslot(
   new Date('2024-01-01T09:00:00Z'),
-  new Date('2024-01-01T10:00:00Z'),
+  new Date('2024-01-01T09:30:00Z'),
 )
 
-contains(slot, new Date('2024-01-01T09:00:00Z')) // true  (start is inclusive)
-contains(slot, new Date('2024-01-01T10:00:00Z')) // false (end is exclusive)
+contains(slot, new Date('2024-01-01T09:00:00Z')) // true: the slot starts here
+contains(slot, new Date('2024-01-01T09:15:00Z')) // true: during the slot
+contains(slot, new Date('2024-01-01T09:30:00Z')) // false: the slot has ended
 ```
 
-This is what stops adjacent slots from overlapping. A 9:00 to 10:00 slot and a
-10:00 to 11:00 slot both touch 10:00, but the first one excludes its end, so they
-do not conflict. `overlaps`, `subtract`, and `intersect` all follow the same
-rule, so booked time that ends exactly when a slot begins does not block it.
-
-## The `Timeslot` shape
-
-`generateTimeslots` and the other generators return `Timeslot[]`:
-
-```ts
-interface Timeslot {
-  start: Date // inclusive
-  end: Date // exclusive
-  metadata?: {
-    index: number // 0-based position in the result
-    durationMinutes: number
-    label?: string // from labelFormatter, if provided
-  }
-}
-```
-
-`start` and `end` are real `Date` instants, stored as UTC. To send them over the
-wire, use [`timeslotToJSON` and `timeslotFromJSON`](/api/utilities). Plain
-`JSON.stringify` turns the dates into strings and will not parse them back into
-`Date` objects.
+This rule applies to ranges, slots, exclusions, and availability windows.
+`overlaps`, `subtract`, and `intersect` follow it too: a booking that ends
+exactly when a slot starts does not block that slot.
 
 ## Timezones and DST
 
-You can write a boundary as a time-only string (`'09:00'`), a full ISO string, a
-`Date`, or a `{ date, time }` object. When you pass a `timezone` such as
-`'America/New_York'`, time-only boundaries are resolved in that zone and
-converted to the correct UTC instant. This runs on the platform `Intl` API, so
-there is no date library involved.
+### Give local times a date and timezone
 
-Date-only values must be written `YYYY-MM-DD`, which is resolved in `timezone`.
-Looser forms like `'2025-3-5'` or `'2025/03/05'` are rejected: the engine would
-resolve them against the machine's local zone rather than `timezone`, so the same
-input would mean different days on different machines. Strings that carry an
-explicit time are unaffected. A day past the end of its month (`'2025-02-30'`) is
-also rejected instead of rolling over into the next month.
+“09:00” alone doesn't identify a moment. It needs a date and a place.
+For everyday working hours, use `day` with time-only boundaries and an explicit
+IANA timezone such as `America/New_York`, `Europe/London`, or `UTC`.
 
-Daylight saving is handled for you. On a spring-forward day the 2:00 to 3:00
-wall-clock hour does not exist, so a 00:00 to 06:00 range produces five hours of
-slots, not six:
+You can also supply dates directly in your boundaries:
+
+| Input | When to use it | Example boundary |
+| --- | --- | --- |
+| Time-only string | Working hours, with `day` supplied separately | `'09:00'` |
+| Date and time object | A local time on a specific date in `timezone` | `{ date: '2024-01-01', time: '09:00' }` |
+| ISO timestamp with `Z` or an offset | An exact moment, such as a calendar event | `'2024-01-01T14:00:00Z'` |
+| JavaScript `Date` | An exact moment you already have in code | `new Date('2024-01-01T14:00:00Z')` |
+
+A boundary is a `start` or `end` value. These formats work for ranges,
+exclusions, and busy windows passed to the generators. The lower-level
+[`subtract` and `intersect`](/api/availability) functions take `Date` objects.
+
+<Callout type="info">
+  Set `timezone` explicitly to get consistent calendar times on browsers and
+  servers. Without it, calendar inputs use the runtime's local timezone.
+  For exact timestamps, include `Z` or an offset such as `-05:00`.
+</Callout>
+
+Use `YYYY-MM-DD` for date-only inputs, such as `'2024-01-01'`. They mean midnight
+in the configured timezone. Forms like `'2025-3-5'`, `'2025/03/05'`, and impossible
+dates such as `'2025-02-30'` are rejected. For a multi-day period, midnight on the
+end date means that day's working hours are outside the period; see
+[Multiple days](/docs/scheduling#multiple-days).
+
+### Display a slot in the timezone you want
+
+A `Date` holds a moment in time; it doesn't keep the timezone used to create it.
+`toISOString()` always shows UTC, marked with `Z`. To show local time, format
+the result with `Intl.DateTimeFormat`:
 
 ```ts
+// Using slots from the first example:
+const formatTime = new Intl.DateTimeFormat('en-US', {
+  timeZone: 'America/New_York',
+  hour: '2-digit',
+  minute: '2-digit',
+  hour12: false,
+})
+
+formatTime.format(slots[0].start) // '09:00'
+slots[0].start.toISOString()     // '2024-01-01T14:00:00.000Z'
+// Both represent the same moment.
+```
+
+Notice the spelling: timeslottr's option is `timezone`; the `Intl` option is
+`timeZone`.
+
+### When the clocks change
+
+Meeting lengths are measured in elapsed time. A 30-minute slot lasts 30 real
+minutes, even if a daylight-saving change makes the clock jump during it.
+
+For example, New York skips from 02:00 to 03:00 on March 10, 2024. The window
+from midnight to 06:00 contains five elapsed hours, so it produces ten
+30-minute slots:
+
+```ts
+import { generateTimeslots } from 'timeslottr'
+
 const slots = generateTimeslots({
-  day: '2024-03-10', // US spring-forward
+  day: '2024-03-10',
   timezone: 'America/New_York',
   range: { start: '00:00', end: '06:00' },
   slotDurationMinutes: 30,
 })
-slots.length // 10: six wall-clock hours, but only five real ones
+
+slots.length // 10
 ```
 
-<Callout type="info">
-  Durations are measured in real elapsed time. Every 30-minute slot above is
-  exactly 30 minutes long, including the one that spans the DST gap.
-</Callout>
+On the fall-back day, an hour repeats, so the same midnight-to-06:00 window
+contains seven elapsed hours and produces fourteen slots. timeslottr uses the
+platform's `Intl` API for timezone calculations, with no extra date library.
 
-Time-only boundaries need a calendar date to anchor them. Pass `day` for a single
-day, or let `generateDailyTimeslots` set it per day. See
-[Scheduling](/docs/scheduling).
+## Put it into practice
+
+- [Scheduling](/docs/scheduling): repeat hours across days, add breaks, and set booking limits.
+- [Multi-party availability](/docs/availability): remove bookings and find times everyone can attend.
+- [Playground](/playground): change a schedule and explore the generated slots.

@@ -30,7 +30,11 @@ on — the interval math, without the calendar sync, storage, or UI.
 - **Half-open intervals.** Every interval is `[start, end)`. A slot ending at 10:00 does not collide with one starting at 10:00, which eliminates the off-by-one errors that silently corrupt bookings.
 
 It ships dual ESM/CJS, is fully typed, runs in Node, edge runtimes, and browsers,
-and has 90%+ test coverage.
+and has high unit test coverage. The current suite has 273 passing tests, with
+97.92% line coverage and 96.18% branch coverage across the library source,
+including DST transitions, interval boundaries, exclusions, booking windows,
+and multi-party availability. CI runs the suite on Node.js 18, 20, and 22;
+run `npm run coverage` to check the latest results.
 
 > timeslottr is an engine, not a booking product. It hands you `Date`-based
 > interval results; calendar sync and storage stay yours.

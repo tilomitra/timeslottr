@@ -5,9 +5,34 @@ description: Every exported TypeScript type in timeslottr.
 
 # Types
 
+You can import types directly from `timeslottr` with `import type`. Start with
+the type that matches the data you're working with:
+
+| Data | Type |
+| --- | --- |
+| Generated meeting options | `Timeslot[]` |
+| Free or busy windows with resolved dates | `Interval[]` |
+| Working hours supplied to a generator | `TimeslotRangeInput` |
+| Generator options | `TimeslotGenerationConfig`, `DailyTimeslotConfig`, or `AvailableTimeslotConfig` |
+| Slots sent as JSON | `TimeslotJSON` |
+
+```ts
+import { generateTimeslots, type TimeslotGenerationConfig } from 'timeslottr'
+
+const config: TimeslotGenerationConfig = {
+  day: '2024-03-15',
+  timezone: 'UTC',
+  range: { start: '09:00', end: '10:00' },
+  slotDurationMinutes: 30,
+}
+const slots = generateTimeslots(config)
+```
+
 ## `Timeslot`
 
-The core output type. Start is inclusive, end is exclusive (half-open interval).
+The result of slot generation. `start` belongs to the slot, and `end` marks
+where it stops. The generators attach metadata, but the type allows it to be
+absent for slots you create yourself. See [Core concepts](/docs/core-concepts).
 
 ```ts
 interface Timeslot {
@@ -64,7 +89,9 @@ interface TimeslotJSON {
 
 ## `TimeslotBoundaryInput`
 
-Flexible input type for a single time boundary.
+A `start` or `end` value before the generator converts it to a `Date`.
+Time-only values need a date anchor, usually `config.day`. Use `YYYY-MM-DD`
+for date-only strings and include `Z` or an offset for exact timestamps.
 
 ```ts
 type TimeslotBoundaryInput =
@@ -80,7 +107,8 @@ type TimeslotBoundaryInput =
 
 ## `TimeslotRangeInput`
 
-A start/end pair of boundaries.
+A pair of boundaries describing working hours, a break, or a busy event.
+Unlike `Interval`, this accepts strings and date/time objects as well as `Date`s.
 
 ```ts
 interface TimeslotRangeInput {
@@ -91,13 +119,19 @@ interface TimeslotRangeInput {
 
 ## `AlignmentStrategy`
 
+Chooses where leftover time goes when a window doesn't fit the slot pattern.
+Use `'start'` to begin at the opening time, `'end'` to finish at the closing
+time, or `'center'` to balance the leftover time on both sides.
+
 ```ts
 type AlignmentStrategy = 'start' | 'end' | 'center'
 ```
 
 ## `Weekday`
 
-Maps to JavaScript's `Date.getDay()` values (Sunday = 0).
+Use this enum as the keys of a weekly schedule map. The values match
+JavaScript's `Date.getDay()` (Sunday = 0). The generator chooses weekdays in
+the configured timezone; you do not need to calculate them yourself.
 
 ```ts
 import { Weekday } from 'timeslottr'
@@ -110,3 +144,49 @@ Weekday.THU // 4
 Weekday.FRI // 5
 Weekday.SAT // 6
 ```
+
+## Generator configuration types
+
+`TimeslotGenerationConfig` describes a single window. `range` and
+`slotDurationMinutes` are required; the other options control dates, breaks,
+slot spacing, labels, and booking limits. See [Configuration](/api/configuration)
+for the complete option tables and defaults.
+
+`DailyTimeslotConfig` uses the same options, except that it supplies `day`
+automatically and lets `range` be a weekday map. It also accepts `maxDays`.
+The map has its own exported alias:
+
+```ts
+type WeekdayTimeslotRangeInput = Map<Weekday, TimeslotRangeInput | null>
+```
+
+An omitted weekday or a `null` entry generates no slots. See
+[Per-weekday schedules](/docs/scheduling#per-weekday-schedules) for an example.
+
+## Supporting types
+
+These smaller types are useful when building your own configuration form or
+label function:
+
+```ts
+type DateValue = Date | string
+
+type TimeOfDayInput =
+  | string // for example, '09:30'
+  | { hour: number; minute?: number; second?: number }
+
+interface TimeslotMetadata {
+  index: number
+  durationMinutes: number
+  label?: string
+}
+
+type LabelFormatter = (
+  slot: { start: Date; end: Date },
+  index: number,
+  durationMinutes: number,
+) => string | undefined
+```
+
+Return a string from `LabelFormatter` to attach `metadata.label`, or `undefined`
+to leave it out. `index` is zero-based and restarts each day in multi-day results.

@@ -5,14 +5,27 @@ description: generateTimeslots, generateDailyTimeslots, and generateAvailableTim
 
 # Generation functions
 
+Each generator turns a schedule into `Timeslot[]`: an array of possible
+meetings with `Date` start and end values. Start with the function that matches
+your task, then add options from [Configuration](/api/configuration).
+
+| Your task | Function |
+| --- | --- |
+| Offer meetings in one time window | `generateTimeslots` |
+| Repeat a schedule over several days | `generateDailyTimeslots` |
+| Avoid existing bookings or coordinate a team | `generateAvailableTimeslots` |
+
+All examples below use an explicit timezone. See [Core concepts](/docs/core-concepts)
+if UTC output or date input formats are new to you.
+
 ## `generateTimeslots`
 
 ```ts
 generateTimeslots(config: TimeslotGenerationConfig): Timeslot[]
 ```
 
-Generates time slots for a single day or custom window. Most callers only need
-this one. See [Configuration](/api/configuration) for every option.
+Use this for one day of working hours. For example, a two-hour window
+contains four 30-minute meetings:
 
 ```ts
 import { generateTimeslots } from 'timeslottr'
@@ -20,20 +33,14 @@ import { generateTimeslots } from 'timeslottr'
 const slots = generateTimeslots({
   day: '2024-03-15',
   timezone: 'America/New_York',
-  range: { start: '09:00', end: '17:00' },
+  range: { start: '09:00', end: '11:00' },
   slotDurationMinutes: 30,
-  slotIntervalMinutes: 15, // overlapping 30-min slots every 15 min
-  bufferBeforeMinutes: 10, // 10 min buffer at start
-  bufferAfterMinutes: 10, // 10 min buffer at end
-  excludedWindows: [{ start: '12:00', end: '13:00' }], // lunch break
-  alignment: 'start',
-  includeEdge: true,
-  maxSlots: 50,
-  minimumNoticeMinutes: 120, // no bookings within the next 2 hours
-  maximumAdvanceDays: 60, // nothing more than 60 days out
-  labelFormatter: (slot, index) => `Slot #${index + 1}`,
 })
 ```
+
+`slots.length` is `4`; the first meeting is 09:00–09:30 in New York.
+For breaks, buffers, and different start intervals, follow the
+[Scheduling guide](/docs/scheduling).
 
 The booking-window options (`minimumNoticeMinutes`, `maximumAdvanceDays`, and
 the `now` they are measured from) apply to all three generators. See
@@ -47,14 +54,16 @@ generateDailyTimeslots(period: TimeslotRangeInput, config: DailyTimeslotConfig):
 
 Generates slots across multiple days. Supports per-weekday schedules via a
 `Map<Weekday, TimeslotRangeInput | null>`, or a single range applied to every day.
-The first argument defines the overall date range; weekdays not present in the
-map (or mapped to `null`) are skipped.
+Only slots fully contained in `period` are returned. A date-only end resolves
+to midnight, so use `end: '2024-03-15'` to include working hours on March 14.
+Weekdays not present in the map (or mapped to `null`) are skipped.
+`maxSlots` limits each day's results, and metadata indexes restart each day.
 
 ```ts
 import { generateDailyTimeslots, Weekday } from 'timeslottr'
 
 const slots = generateDailyTimeslots(
-  { start: '2024-03-01', end: '2024-03-14' },
+  { start: '2024-03-01', end: '2024-03-15' },
   {
     range: new Map([
       [Weekday.MON, { start: '09:00', end: '17:00' }],
@@ -80,7 +89,8 @@ const slots = generateDailyTimeslots(
 generateAvailableTimeslots(config: AvailableTimeslotConfig): Timeslot[]
 ```
 
-The same config as `generateTimeslots`, plus `busy` (events to subtract) and
+Use this when existing events should block otherwise open hours. It takes
+the same config as `generateTimeslots`, plus `busy` (events to subtract) and
 `participantsBusy` (per-person busy sets). It subtracts bookings, intersects
 across participants when provided, then runs the standard slot generator over the
 remaining free time. Slotting behavior is identical to `generateTimeslots`.
@@ -100,15 +110,10 @@ const slots = generateAvailableTimeslots({
   // each invitee's busy times; only times where all are free survive
   participantsBusy: [
     [{ start: '09:00', end: '10:00' }], // Alice
-    [
-      {
-        start: { date: '2024-01-01', time: '16:00' },
-        end: { date: '2024-01-01', time: '17:00' },
-      },
-    ], // Bob
+    [{ start: '16:00', end: '17:00' }], // Bob
   ],
 })
-// 30-minute slots between 10:00 and 16:00, with lunch removed
+// 10 slots: 10:00–12:00 and 13:00–16:00, in New York
 ```
 
 Busy times accept the same formats as `range` and `excludedWindows`

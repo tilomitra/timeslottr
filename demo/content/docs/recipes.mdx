@@ -5,7 +5,10 @@ description: Task-oriented snippets for common scheduling problems.
 
 # Recipes
 
-Short, copy-pasteable answers to common questions.
+Pick the task closest to yours, then replace the dates and working hours.
+Each example includes its imports and uses an explicit timezone or UTC
+timestamps. Fixed dates stay useful for experimenting; the booking-window
+example also fixes `now` so its results don't change as time passes.
 
 ## Exclude a lunch break (and other blackout windows)
 
@@ -17,6 +20,7 @@ import { generateTimeslots } from 'timeslottr'
 
 generateTimeslots({
   day: '2024-03-15',
+  timezone: 'America/New_York',
   range: { start: '09:00', end: '17:00' },
   slotDurationMinutes: 30,
   excludedWindows: [
@@ -28,7 +32,9 @@ generateTimeslots({
 
 ## Find common availability for a team
 
-Give each person's busy intervals; only mutually-free windows produce slots.
+Pass one busy list per person. Only times when everyone is free produce slots.
+Here, the remaining windows are 11:00–14:00 and 15:00–17:00 in New York: ten
+30-minute meeting options.
 
 ```ts
 import { generateAvailableTimeslots } from 'timeslottr'
@@ -70,6 +76,8 @@ Pass a `timezone` and use time-only boundaries. DST transitions are resolved for
 you. See [Core concepts](/docs/core-concepts#timezones-and-dst).
 
 ```ts
+import { generateTimeslots } from 'timeslottr'
+
 generateTimeslots({
   day: '2024-11-03', // US fall-back: the 1am to 2am hour happens twice
   timezone: 'America/New_York',
@@ -80,20 +88,35 @@ generateTimeslots({
 
 ## Send slots over the network
 
-`Date`s don't survive `JSON.stringify`/`parse`. Convert explicitly:
+JSON stores dates as strings. Use the JSON helpers to restore `Date` objects
+when you read the data back:
 
 ```ts
-import { timeslotToJSON, timeslotFromJSON } from 'timeslottr'
+import { generateTimeslots, timeslotToJSON, timeslotFromJSON } from 'timeslottr'
 
-const wire = slots.map(timeslotToJSON) // ISO strings
-const restored = wire.map(timeslotFromJSON) // back to Date instances
+const slots = generateTimeslots({
+  day: '2024-03-15',
+  timezone: 'UTC',
+  range: { start: '09:00', end: '10:00' },
+  slotDurationMinutes: 30,
+})
+const payload = JSON.stringify(slots.map(timeslotToJSON))
+const restored = JSON.parse(payload).map(timeslotFromJSON)
+restored[0].start instanceof Date // true
 ```
 
 ## Cap how many slots you generate
 
+Use `maxSlots` to return only the first few options. This example returns eight
+15-minute slots, from 09:00–09:15 through 10:45–11:00. With
+`generateDailyTimeslots`, the cap applies separately to each day.
+
 ```ts
+import { generateTimeslots } from 'timeslottr'
+
 generateTimeslots({
   day: '2024-03-15',
+  timezone: 'America/New_York',
   range: { start: '09:00', end: '17:00' },
   slotDurationMinutes: 15,
   maxSlots: 8, // stop after the first 8
@@ -102,15 +125,19 @@ generateTimeslots({
 
 ## Only offer slots someone can actually book
 
-Give yourself lead time to prepare, and stop people booking a year out:
+Allow two hours to prepare and accept bookings less than 60 calendar days
+ahead of the reference time:
 
 ```ts
+import { generateDailyTimeslots } from 'timeslottr'
+
 generateDailyTimeslots(
   { start: '2024-03-01', end: '2024-06-01' },
   {
     range: { start: '09:00', end: '17:00' },
     slotDurationMinutes: 30,
     timezone: 'America/New_York',
+    now: '2024-03-01T08:00:00-05:00', // fixed clock for this example
     minimumNoticeMinutes: 120, // nothing sooner than 2 hours from now
     maximumAdvanceDays: 60, // nothing further out than 60 days
   },
@@ -118,5 +145,5 @@ generateDailyTimeslots(
 ```
 
 Unbookable slots are dropped before `maxSlots` is applied, so combining the two
-still gives you a full page of results. Pass `now` to pin the reference time in
-tests. See [Booking windows](/docs/scheduling#booking-windows).
+counts only bookable slots, up to the available number per day. Omit the fixed
+`now` in a live booking flow to use the current clock. See [Booking windows](/docs/scheduling#booking-windows).

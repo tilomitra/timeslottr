@@ -5,9 +5,15 @@ description: subtract and intersect, the interval math behind generateAvailableT
 
 # Availability primitives
 
-Two functions over half-open `[start, end)` intervals. Both work on resolved
-`Interval` objects (`{ start: Date; end: Date }`), and they are what
-[`generateAvailableTimeslots`](/api/generation) uses internally.
+Use these functions when you want to work with free time directly.
+`subtract` answers “what's left after these bookings?” and `intersect` answers
+“when is everyone free?” Their results are windows of any length, rather than
+fixed-length meeting slots.
+
+Both take `Interval` objects: `{ start: Date; end: Date }`. Convert calendar data
+to `Date` objects before calling them. The examples below use UTC timestamps.
+For time-only strings or ready-to-book meeting slots, use
+[`generateAvailableTimeslots`](/api/generation#generateavailabletimeslots).
 
 ## `subtract`
 
@@ -18,8 +24,8 @@ subtract(source: Interval[], busy: Interval[]): Interval[]
 Removes the `busy` intervals from the `source` (available) intervals and returns
 the free time that is left. The `busy` list can be unsorted, overlapping, or
 touching boundaries. A busy window in the middle of a source splits it in two.
-Touching boundaries do not count as overlap. It sorts once and sweeps, so it runs
-in `O((n + m) log m)`.
+A booking that ends exactly when availability begins leaves that availability
+intact. See [half-open intervals](/docs/core-concepts#half-open-intervals-start-end).
 
 ```ts
 import { subtract } from 'timeslottr'
@@ -40,7 +46,7 @@ intersect(intervalSets: Interval[][]): Interval[]
 Given one set of free intervals per person, it returns the windows where all of
 them overlap. With no sets it returns `[]`. With one set it returns a merged copy.
 If any set is empty the result is `[]`, since a person with no availability blocks
-everyone. It sweeps all sets at once, in `O(total intervals · log)`.
+everyone.
 
 ```ts
 import { intersect } from 'timeslottr'
@@ -51,6 +57,19 @@ const team = intersect([
 ])
 // result: [11:00 to 15:00]
 ```
+
+### Empty lists: free time and busy time mean different things
+
+| Call | Meaning | Result |
+| --- | --- | --- |
+| `subtract(availability, [])` | No bookings to remove | All original availability |
+| `subtract([], busy)` | No availability to start with | `[]` |
+| `intersect([])` | No participants supplied | `[]` |
+| `intersect([alice, []])` | One person has no free time | `[]` |
+| `intersect([alice])` | Only one person's free time | A merged copy of that person's windows |
+
+An empty free list blocks shared availability. By comparison, an empty busy
+list in `participantsBusy` means that person has no bookings to block time.
 
 Both return new `Interval` objects with fresh `Date` instances, so your inputs are
 not mutated. See the [`Interval` type](/api/types#interval).

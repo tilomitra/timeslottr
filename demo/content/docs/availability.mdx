@@ -7,19 +7,25 @@ import { Callout } from 'nextra/components'
 
 # Multi-party availability
 
-Generating slots tells you when a schedule is open. Booking a meeting needs more
-than that: you have to know when everyone is actually free. That means removing
-the time that is already booked, then finding the overlap across several people's
-calendars.
+Suppose you work 09:00–17:00, have lunch at noon, and need a meeting with
+Alice and Bob. You need a slot that fits your hours and avoids all three
+calendars. `generateAvailableTimeslots` does that in one call.
 
-Most teams hand-roll this, and it is easy to get wrong. timeslottr gives you two
-interval functions for it, [`subtract`](/api/availability) and
+Use the interval functions [`subtract`](/api/availability) and
 [`intersect`](/api/availability), plus [`generateAvailableTimeslots`](/api/generation),
-which wires them into the slot generator.
+which combines them with slot generation.
 
 Everything here uses half-open `[start, end)` intervals (see
 [Core concepts](/docs/core-concepts)), so a slot that ends when a meeting starts
 is not treated as a conflict.
+
+## Pick your starting point
+
+| What you have | What to use |
+| --- | --- |
+| Working hours and existing bookings | `generateAvailableTimeslots` to get bookable slots |
+| Free windows and bookings as `Date` objects | `subtract` to get the remaining free windows |
+| A list of free windows for each person | `intersect` to find shared free windows |
 
 ## The pipeline
 
@@ -55,8 +61,16 @@ const slots = generateAvailableTimeslots({
     [{ start: '16:00', end: '17:00' }], // Bob
   ],
 })
-// 30-minute slots between 10:00 and 16:00, with lunch removed
+// 10 slots: 10:00–12:00 and 13:00–16:00, in New York
 ```
+
+Read the example as “start with my working hours, remove lunch, then avoid
+Alice's morning meeting and Bob's late-afternoon meeting.” That leaves two
+free windows, which are split into 30-minute slots.
+
+`busy` is one shared list of bookings. `participantsBusy` is a list of lists:
+each inner list belongs to one person. You provide these events from your
+calendar integration; timeslottr does not fetch calendars or save reservations.
 
 `busy` and `participantsBusy` accept the same formats as `range` and
 `excludedWindows`: a `Date`, an ISO string, a time-only string like `'09:00'`, or
@@ -72,7 +86,9 @@ a `{ date, time }` object.
 
 Sometimes you already have free and busy intervals and just want the math. Both
 functions work on resolved `Interval` objects (`{ start: Date; end: Date }`).
-The [API reference](/api/availability) covers their complexity and edge cases.
+Use these functions when you want free windows of any length, rather than
+fixed-length meetings. The [API reference](/api/availability) covers their inputs
+and edge cases. The times in the next two examples are UTC (`Z`).
 
 ### subtract: availability minus bookings
 
@@ -106,7 +122,17 @@ all of them overlap. With no sets it returns `[]`. With one set it returns a
 merged copy. If any set is empty, the result is `[]`, since a person with no
 availability blocks everyone.
 
+## Why am I getting no slots?
+
+- Check that every free segment is long enough for `slotDurationMinutes`. Free
+  minutes on opposite sides of a booking cannot be combined into one slot.
+- Check the date and timezone used for time-only boundaries.
+- If you set `minimumNoticeMinutes`, check `now`: past dates may be filtered out.
+- For `intersect`, an empty person's **free** list blocks all shared availability.
+  For `participantsBusy`, an empty person's **busy** list blocks nothing.
+
 ## Try it
 
-The [Playground](/playground) lets you add booked time and watch the available
-slots update as you go.
+Use the [Playground](/playground) to explore working hours, slot lengths, and
+exclusions. To try participant bookings, start with the example above and
+replace each person's busy list with your own calendar events.
