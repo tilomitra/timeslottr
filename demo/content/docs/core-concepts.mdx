@@ -55,7 +55,13 @@ wire, use [`timeslotToJSON` and `timeslotFromJSON`](/api/utilities). Plain
 You can write a boundary as a time-only string (`'09:00'`), a full ISO string, a
 `Date`, or a `{ date, time }` object. When you pass a `timezone` such as
 `'America/New_York'`, time-only boundaries are resolved in that zone and
-converted to the correct UTC instant. This runs on the platform `Intl` API, so
+converted to a UTC instant. Without `timezone`, calendar inputs use the runtime's
+local timezone. Set it explicitly for consistent results on browsers and servers.
+For ISO timestamps, include `Z` or an offset (such as `-05:00`) to specify an
+unambiguous instant. A `Date` represents an instant; format it with
+`Intl.DateTimeFormat` and a `timeZone` to display it in the user's zone.
+
+This runs on the platform `Intl` API, so
 there is no date library involved.
 
 Date-only values must be written `YYYY-MM-DD`, which is resolved in `timezone`.

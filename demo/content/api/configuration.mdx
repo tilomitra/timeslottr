@@ -17,11 +17,11 @@ generators). All options except `range` and `slotDurationMinutes` are optional.
 | `bufferBeforeMinutes` | `number` | `0` | Minutes trimmed from the start of the usable window before generating slots. |
 | `bufferAfterMinutes` | `number` | `0` | Minutes trimmed from the end of the usable window before generating slots. |
 | `excludedWindows` | `TimeslotRangeInput[]` | none | Sub-ranges to exclude (lunch breaks, blackouts). Overlapping exclusions are merged automatically. |
-| `timezone` | `string` | none | IANA timezone id (e.g. `"America/New_York"`, `"UTC"`). Controls how time-only strings are interpreted. |
+| `timezone` | `string` | none | IANA timezone id (e.g. `"America/New_York"`, `"UTC"`). Controls calendar dates and time-only boundaries. Without it, the runtime local timezone is used. |
 | `alignment` | `'start' \| 'end' \| 'center'` | `'start'` | How to handle leftover time that doesn't fill a complete slot. `'start'` discards at the end, `'end'` aligns backward from the range end, `'center'` distributes leftover on both sides. |
 | `minimumSlotDurationMinutes` | `number` | `slotDurationMinutes` | Minimum duration for partial/edge slots. Only relevant when `includeEdge` is `true`. |
 | `includeEdge` | `boolean` | `true` | Whether to include truncated edge slots (cut short by the range boundary or an exclusion) when they meet the minimum duration. |
-| `maxSlots` | `number` | none | Hard limit on the number of slots generated. Generation stops once this count is reached. |
+| `maxSlots` | `number` | none | Maximum slots per call for single-day generators, or per day for `generateDailyTimeslots`. |
 | `minimumNoticeMinutes` | `number` | none | Lead time before a slot can be booked. Slots starting before `now + minimumNoticeMinutes` are dropped. Must be non-negative. |
 | `maximumAdvanceDays` | `number` | none | How far ahead bookings are allowed, in whole calendar days. Slots starting at or after the same wall-clock time that many days from `now` (in `timezone`) are dropped. Must be a positive integer. |
 | `now` | `Date \| string` | `new Date()` | Reference "current time" for the two options above. Set it to make output deterministic, or to gate against a server clock. Ignored when neither option is set. |
@@ -31,7 +31,8 @@ The booking-window options apply to every generator. Filtering looks at each
 slot's start time, and the bookable span is half-open: a slot starting exactly at
 the notice boundary is kept, one starting exactly at the advance cutoff is not.
 Unbookable slots are removed *before* `maxSlots` is applied, so the cap counts
-bookable slots only. See [Booking windows](/docs/scheduling#booking-windows).
+bookable slots only. `maximumAdvanceDays` alone does not remove past slots;
+set `minimumNoticeMinutes: 0` as well to exclude starts before `now`. See [Booking windows](/docs/scheduling#booking-windows).
 
 ## Additional `DailyTimeslotConfig` options
 

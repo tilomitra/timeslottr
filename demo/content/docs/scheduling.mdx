@@ -5,8 +5,9 @@ description: Single-day, multi-day, and per-weekday slot generation with buffers
 
 # Scheduling
 
-timeslottr has two generators: `generateTimeslots` for a single window, and
-`generateDailyTimeslots` to apply a schedule across many days.
+Use `generateTimeslots` for one day or time window, and
+`generateDailyTimeslots` to repeat working hours across a date range. To also
+remove bookings, see [Multi-party availability](/docs/availability).
 
 ## Single day
 
@@ -46,16 +47,29 @@ generateTimeslots({
 })
 ```
 
+## Buffers and breaks
+
+Buffers trim the outer working window. For a 09:00–17:00 range, a 10-minute
+before buffer and a 10-minute after buffer leave 09:10–16:50. They do not add
+prep or cleanup time around each meeting or busy event.
+
+Use `excludedWindows` to remove breaks inside the range. Each remaining free
+segment is slotted separately, so no slot crosses a break. If a segment is
+shorter than `slotDurationMinutes`, it produces no slots by default. To allow
+shorter slots, set `minimumSlotDurationMinutes` and keep `includeEdge: true`.
+
 ## Multiple days
 
 `generateDailyTimeslots` takes a `period` (start/end dates) plus the same config,
-and applies it to each day in range:
+and applies it to each day in range. Date-only period boundaries mean midnight
+in `timezone`: the end date does **not** include that day's working hours.
+To include March 1 through March 7, set the end to March 8:
 
 ```ts
 import { generateDailyTimeslots } from 'timeslottr'
 
 const slots = generateDailyTimeslots(
-  { start: '2024-03-01', end: '2024-03-07' },
+  { start: '2024-03-01', end: '2024-03-08' },
   {
     range: { start: '09:00', end: '17:00' }, // same hours every day
     slotDurationMinutes: 60,
@@ -108,6 +122,7 @@ const slots = generateDailyTimeslots(
     slotDurationMinutes: 30,
     timezone: 'America/New_York',
 
+    now: '2024-03-01T08:00:00-05:00', // fixed clock for this example
     minimumNoticeMinutes: 120, // no bookings within the next 2 hours
     maximumAdvanceDays: 60,    // and nothing more than 60 days out
   },
@@ -118,14 +133,17 @@ const slots = generateDailyTimeslots(
 cutoff stays at the same local time across a daylight-saving change. It must be
 a positive whole number.
 
-Filtering looks at each slot's start time, never its end, so a slot already in
-progress is never bookable. The bookable span is half-open: a slot starting
+Filtering looks at each slot's start time, never its end. Set
+`minimumNoticeMinutes: 0` to exclude slots that have already started;
+`maximumAdvanceDays` alone only sets an upper cutoff. The bookable span is half-open: a slot starting
 exactly at the notice boundary is kept, one starting exactly at the advance
 cutoff is not.
 
 Unbookable slots are dropped before `maxSlots` is applied, so `maxSlots: 5`
-gives you five *bookable* slots rather than five candidates that thin out to two.
-Surviving slots are renumbered contiguously from `0`.
+returns up to five *bookable* slots per day, provided enough slots fit.
+For `generateDailyTimeslots`, `maxSlots` and metadata indexes apply separately
+to each day. Use `slots.slice(0, 5)` if you need five results across the entire
+period.
 
 ### Controlling "now"
 
@@ -144,6 +162,9 @@ generateTimeslots({
 })
 // earliest bookable start is 11:15, so the first slot returned is 11:30
 ```
+
+The fixed `now` values above keep the examples repeatable. Omit `now` in a live
+booking flow to use the current clock.
 
 When neither option is set, `now` is never read and generation is a pure
 function of the range.

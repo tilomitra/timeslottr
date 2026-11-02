@@ -7,39 +7,21 @@ import { Tabs, Cards } from 'nextra/components'
 
 # timeslottr
 
-timeslottr is a zero-dependency TypeScript library for interval arithmetic over
-calendar time. It turns working hours into bookable slots, subtracts
-already-booked events, and intersects multiple participants' calendars to find
-the windows where everyone is free.
+timeslottr turns working hours into bookable time slots. Use it to skip breaks,
+remove existing bookings, and find times when everyone on a team is free.
 
-It does the interval math that sits underneath a scheduling product like Calendly
-or cal.com. The calendar sync, storage, and UI stay yours.
+It is a TypeScript library with no runtime dependencies. It handles timezones
+and daylight-saving changes using the platform's `Intl` API. You provide the
+calendar data, storage, and booking UI.
 
-## What can you use it for?
+## Choose the function for your task
 
-- A booking page. Turn "Monday to Thursday, 9 to 5, 30-minute meetings" into the
-  list of times a customer can click.
-- Interview loops, where the slot has to work for the candidate and three
-  interviewers at once.
-- Appointments that need prep or cleanup time around them, using the before and
-  after buffers.
-- Room, court, and equipment reservations. Same interval math, different noun.
-- Shift and on-call rotas built from a per-weekday schedule across a date range.
-- Delivery and pickup windows, with a cap on how far ahead people can book so
-  nobody reserves a slot six months out.
-
-## Features
-
-- **Slot generation.** Split a working day into fixed-length slots, with
-  per-weekday hours, buffers, breaks, and overlapping starts.
-- **Availability math.** Remove the time that is already booked, then keep only
-  the windows where everyone is free.
-- **Timezones and daylight saving.** Handled with what Node and browsers already
-  ship, so no date library and no timezone database in your bundle.
-- **Half-open intervals.** A slot that ends at 10:00 does not collide with one
-  that starts at 10:00, so adjacent slots never double-book.
-- **Typed and portable.** Fully typed, no runtime dependencies, ES modules and
-  CommonJS. Runs in Node, edge runtimes, and browsers.
+| I want to… | Use |
+| --- | --- |
+| Generate slots for one day or time window | [`generateTimeslots`](/api/generation#generatetimeslots) |
+| Apply working hours across several days | [`generateDailyTimeslots`](/api/generation#generatedailytimeslots) |
+| Offer slots around existing bookings or several people's calendars | [`generateAvailableTimeslots`](/api/generation#generateavailabletimeslots) |
+| Subtract busy time or find shared free time without generating slots | [`subtract` and `intersect`](/api/availability) |
 
 ## Installation
 
@@ -68,7 +50,7 @@ or cal.com. The calendar sync, storage, and UI stay yours.
 
 Requires Node.js ≥ 18.
 
-## Your first slots
+## Generate your first slots
 
 Generate 30-minute slots for a single day, skipping a lunch break:
 
@@ -84,11 +66,17 @@ const slots = generateTimeslots({
 })
 
 console.log(slots.length) // 14 slots: 9 to 12 and 1 to 5, every 30 minutes
-console.log(slots[0].start.toISOString())
+console.log(slots[0].start.toISOString()) // '2024-01-01T14:00:00.000Z'
+console.log(slots[0].end.toISOString())   // '2024-01-01T14:30:00.000Z'
 ```
 
 Each slot is a `Timeslot` with an inclusive `start`, an exclusive `end`, and some
-`metadata`. Start and end are real `Date` objects.
+`metadata`. Start and end are real `Date` objects. In this example, 09:00 in
+New York is 14:00 UTC. The `Z` in the output means UTC; it does not mean the
+configured timezone was ignored.
+
+These fixed-date examples work whenever you run them. Past dates are included
+unless you enable a [booking window](/docs/scheduling#booking-windows).
 
 ## Find a time that works for a team
 
@@ -109,7 +97,7 @@ const slots = generateAvailableTimeslots({
     [{ start: '16:00', end: '17:00' }], // Bob
   ],
 })
-// → 30-min slots only where the host, Alice, and Bob are all free
+// 10 slots: 10:00–12:00 and 13:00–16:00 in America/New_York
 ```
 
 ## Where to next

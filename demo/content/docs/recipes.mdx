@@ -111,6 +111,7 @@ generateDailyTimeslots(
     range: { start: '09:00', end: '17:00' },
     slotDurationMinutes: 30,
     timezone: 'America/New_York',
+    now: '2024-03-01T08:00:00-05:00', // fixed clock for this example
     minimumNoticeMinutes: 120, // nothing sooner than 2 hours from now
     maximumAdvanceDays: 60, // nothing further out than 60 days
   },
@@ -118,5 +119,5 @@ generateDailyTimeslots(
 ```
 
 Unbookable slots are dropped before `maxSlots` is applied, so combining the two
-still gives you a full page of results. Pass `now` to pin the reference time in
+counts only bookable slots, up to the available number per day. Pass `now` to pin the reference time in
 tests. See [Booking windows](/docs/scheduling#booking-windows).

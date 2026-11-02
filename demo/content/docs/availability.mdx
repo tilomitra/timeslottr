@@ -12,10 +12,9 @@ than that: you have to know when everyone is actually free. That means removing
 the time that is already booked, then finding the overlap across several people's
 calendars.
 
-Most teams hand-roll this, and it is easy to get wrong. timeslottr gives you two
-interval functions for it, [`subtract`](/api/availability) and
+Use the interval functions [`subtract`](/api/availability) and
 [`intersect`](/api/availability), plus [`generateAvailableTimeslots`](/api/generation),
-which wires them into the slot generator.
+which combines them with slot generation.
 
 Everything here uses half-open `[start, end)` intervals (see
 [Core concepts](/docs/core-concepts)), so a slot that ends when a meeting starts
@@ -105,6 +104,15 @@ Given one set of free intervals per person, `intersect` returns the windows wher
 all of them overlap. With no sets it returns `[]`. With one set it returns a
 merged copy. If any set is empty, the result is `[]`, since a person with no
 availability blocks everyone.
+
+## Why am I getting no slots?
+
+- Check that every free segment is long enough for `slotDurationMinutes`. Free
+  minutes on opposite sides of a booking cannot be combined into one slot.
+- Check the date and timezone used for time-only boundaries.
+- If you set `minimumNoticeMinutes`, check `now`: past dates may be filtered out.
+- For `intersect`, an empty person's **free** list blocks all shared availability.
+  For `participantsBusy`, an empty person's **busy** list blocks nothing.
 
 ## Try it
 

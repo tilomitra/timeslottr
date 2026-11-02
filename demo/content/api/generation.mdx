@@ -29,6 +29,7 @@ const slots = generateTimeslots({
   alignment: 'start',
   includeEdge: true,
   maxSlots: 50,
+  now: '2024-03-15T08:00:00-04:00', // fixed clock for this example
   minimumNoticeMinutes: 120, // no bookings within the next 2 hours
   maximumAdvanceDays: 60, // nothing more than 60 days out
   labelFormatter: (slot, index) => `Slot #${index + 1}`,
@@ -47,8 +48,10 @@ generateDailyTimeslots(period: TimeslotRangeInput, config: DailyTimeslotConfig):
 
 Generates slots across multiple days. Supports per-weekday schedules via a
 `Map<Weekday, TimeslotRangeInput | null>`, or a single range applied to every day.
-The first argument defines the overall date range; weekdays not present in the
-map (or mapped to `null`) are skipped.
+Only slots fully contained in `period` are returned. A date-only end resolves
+to midnight, so use `end: '2024-03-15'` to include working hours on March 14.
+Weekdays not present in the map (or mapped to `null`) are skipped.
+`maxSlots` limits each day's results, and metadata indexes restart each day.
 
 ```ts
 import { generateDailyTimeslots, Weekday } from 'timeslottr'
