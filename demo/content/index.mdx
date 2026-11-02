@@ -14,6 +14,13 @@ It is a TypeScript library with no runtime dependencies. It handles timezones
 and daylight-saving changes using the platform's `Intl` API. You provide the
 calendar data, storage, and booking UI.
 
+**High unit test coverage.** The current suite has 273 passing tests, with
+97.92% line coverage and 96.18% branch coverage across the library source.
+Tests cover daylight-saving transitions, interval boundaries, exclusions,
+booking windows, and multi-party availability. [CI runs the suite on Node.js
+18, 20, and 22](https://github.com/tilomitra/timeslottr/actions/workflows/ci.yml).
+Run `npm run coverage` from the repository root to check the latest results.
+
 ## Choose the function for your task
 
 | I want to… | Use |
