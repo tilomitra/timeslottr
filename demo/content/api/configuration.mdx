@@ -1,26 +1,71 @@
 ---
 title: Configuration
-description: Every option accepted by generateTimeslots and generateDailyTimeslots.
+description: Choose working hours, slot lengths, breaks, booking limits, and availability rules.
 ---
 
 # Configuration
 
-Options for `generateTimeslots()` (and, except where noted, the other
-generators). All options except `range` and `slotDurationMinutes` are optional.
+Start with working hours and a meeting length. Add the other options as your
+booking rules grow. The same basic options work across all three generators;
+the extra multi-day and availability options are listed at the bottom.
+
+```ts
+import { generateTimeslots } from 'timeslottr'
+
+const slots = generateTimeslots({
+  day: '2024-03-15',
+  timezone: 'America/New_York',
+  range: { start: '09:00', end: '10:00' },
+  slotDurationMinutes: 30,
+})
+// Two slots: 09:00–09:30 and 09:30–10:00 in New York
+```
+
+`range` and `slotDurationMinutes` are required. Time-only boundaries also need
+a date, usually supplied by `day`. An explicit `timezone` keeps calendar inputs
+consistent across browsers and servers.
+
+## Working hours and dates
+
+Choose when the schedule runs.
 
 | Option | Type | Default | Description |
 | --- | --- | --- | --- |
 | `range` | `TimeslotRangeInput` | _required_ | Start and end boundaries for slot generation. Accepts `Date`s, ISO strings, or time-only strings like `"09:00"`. |
 | `slotDurationMinutes` | `number` | _required_ | Length of each slot in minutes. Must be positive. |
 | `day` | `Date \| string` | none | Calendar date to anchor time-only boundaries, e.g. `day: '2024-03-15'` with `range: { start: '09:00', end: '17:00' }`. |
+| `timezone` | `string` | none | IANA timezone id (e.g. `"America/New_York"`, `"UTC"`). Controls calendar dates and time-only boundaries. Without it, the runtime local timezone is used. |
+
+## Slot starts and breaks
+
+Control how often meetings can start and which parts of the window are usable.
+
+| Option | Type | Default | Description |
+| --- | --- | --- | --- |
 | `slotIntervalMinutes` | `number` | `slotDurationMinutes` | Step between consecutive slot starts. Set lower than the duration to create overlapping slots. |
 | `bufferBeforeMinutes` | `number` | `0` | Minutes trimmed from the start of the usable window before generating slots. |
 | `bufferAfterMinutes` | `number` | `0` | Minutes trimmed from the end of the usable window before generating slots. |
 | `excludedWindows` | `TimeslotRangeInput[]` | none | Sub-ranges to exclude (lunch breaks, blackouts). Overlapping exclusions are merged automatically. |
-| `timezone` | `string` | none | IANA timezone id (e.g. `"America/New_York"`, `"UTC"`). Controls calendar dates and time-only boundaries. Without it, the runtime local timezone is used. |
+
+## Leftover time at the edges
+
+By default, only full-length slots are returned. To allow a shorter final slot,
+keep `includeEdge: true` and lower `minimumSlotDurationMinutes`. For example,
+a 09:00–09:45 window with a 30-minute duration and a 15-minute minimum can
+return 09:00–09:30 plus 09:30–09:45 with start alignment.
+
+| Option | Type | Default | Description |
+| --- | --- | --- | --- |
 | `alignment` | `'start' \| 'end' \| 'center'` | `'start'` | How to handle leftover time that doesn't fill a complete slot. `'start'` discards at the end, `'end'` aligns backward from the range end, `'center'` distributes leftover on both sides. |
 | `minimumSlotDurationMinutes` | `number` | `slotDurationMinutes` | Minimum duration for partial/edge slots. Only relevant when `includeEdge` is `true`. |
 | `includeEdge` | `boolean` | `true` | Whether to include truncated edge slots (cut short by the range boundary or an exclusion) when they meet the minimum duration. |
+
+## Booking limits and labels
+
+Limit which results are offered and add a display label if needed.
+
+| Option | Type | Default | Description |
+| --- | --- | --- | --- |
 | `maxSlots` | `number` | none | Maximum slots per call for single-day generators, or per day for `generateDailyTimeslots`. |
 | `minimumNoticeMinutes` | `number` | none | Lead time before a slot can be booked. Slots starting before `now + minimumNoticeMinutes` are dropped. Must be non-negative. |
 | `maximumAdvanceDays` | `number` | none | How far ahead bookings are allowed, in whole calendar days. Slots starting at or after the same wall-clock time that many days from `now` (in `timezone`) are dropped. Must be a positive integer. |
@@ -36,6 +81,7 @@ set `minimumNoticeMinutes: 0` as well to exclude starts before `now`. See [Booki
 
 ## Additional `DailyTimeslotConfig` options
 
+Use these when repeating a schedule across a date range.
 `generateDailyTimeslots()` accepts all of the above (except `day`, which is set
 automatically per day), plus:
 
@@ -46,9 +92,14 @@ automatically per day), plus:
 
 ## Additional `AvailableTimeslotConfig` options
 
+Use these when meetings must fit around existing events.
 `generateAvailableTimeslots()` accepts all single-day options, plus:
 
 | Option | Type | Default | Description |
 | --- | --- | --- | --- |
 | `busy` | `TimeslotRangeInput[]` | none | Booked events to subtract from availability (block everyone). |
 | `participantsBusy` | `TimeslotRangeInput[][]` | none | Per-person busy sets. When present, results are narrowed to windows where every participant is free. |
+
+An empty inner list in `participantsBusy` means that person is free for the
+whole window. For a complete example, follow the
+[availability guide](/docs/availability).

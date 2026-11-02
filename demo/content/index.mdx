@@ -77,8 +77,9 @@ console.log(slots[0].start.toISOString()) // '2024-01-01T14:00:00.000Z'
 console.log(slots[0].end.toISOString())   // '2024-01-01T14:30:00.000Z'
 ```
 
-Each slot is a `Timeslot` with an inclusive `start`, an exclusive `end`, and some
-`metadata`. Start and end are real `Date` objects. In this example, 09:00 in
+Each slot is a `Timeslot`: a meeting option with `start` and `end` dates plus
+`metadata` describing its length and position. A meeting can end exactly when
+the next one starts; [Core concepts](/docs/core-concepts) walks through that rule. Start and end are real `Date` objects. In this example, 09:00 in
 New York is 14:00 UTC. The `Z` in the output means UTC; it does not mean the
 configured timezone was ignored.
 
@@ -87,8 +88,8 @@ unless you enable a [booking window](/docs/scheduling#booking-windows).
 
 ## Find a time that works for a team
 
-Take a base schedule, remove what is already booked, and keep only the windows
-where everyone is free.
+Suppose the host takes lunch at noon, Alice is busy until 10:00, and Bob is busy
+from 16:00. Give the generator those bookings to find times they can all attend.
 
 ```ts
 import { generateAvailableTimeslots } from 'timeslottr'
@@ -107,7 +108,15 @@ const slots = generateAvailableTimeslots({
 // 10 slots: 10:00–12:00 and 13:00–16:00 in America/New_York
 ```
 
+Your application supplies the bookings and saves any reservations. timeslottr
+returns the possible meetings; it does not connect to calendars or reserve a slot.
+
 ## Where to next
+
+New to scheduling dates? Start with Core concepts. Ready to build? Follow
+Scheduling for working hours, or Multi-party availability for calendar bookings.
+The reference pages list signatures, types, and defaults.
+
 
 <Cards>
   <Cards.Card title="Core concepts" href="/docs/core-concepts" arrow />

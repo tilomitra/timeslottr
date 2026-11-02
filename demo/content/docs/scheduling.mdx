@@ -5,13 +5,15 @@ description: Single-day, multi-day, and per-weekday slot generation with buffers
 
 # Scheduling
 
+Start with one day of working hours, then add rules as you need them.
 Use `generateTimeslots` for one day or time window, and
 `generateDailyTimeslots` to repeat working hours across a date range. To also
 remove bookings, see [Multi-party availability](/docs/availability).
 
 ## Single day
 
-Give it a `range`, a `slotDurationMinutes`, and whatever options you need:
+For a first schedule, choose a date, timezone, working window, and meeting length.
+This example offers 30-minute meetings from 09:00 to 10:00 in New York:
 
 ```ts
 import { generateTimeslots } from 'timeslottr'
@@ -19,15 +21,13 @@ import { generateTimeslots } from 'timeslottr'
 const slots = generateTimeslots({
   day: '2024-03-15',
   timezone: 'America/New_York',
-  range: { start: '09:00', end: '17:00' },
+  range: { start: '09:00', end: '10:00' },
   slotDurationMinutes: 30,
-  slotIntervalMinutes: 15, // start a new slot every 15 min, so slots overlap
-  bufferBeforeMinutes: 10, // trim 10 min off the start of the window
-  bufferAfterMinutes: 10, // trim 10 min off the end
-  excludedWindows: [{ start: '12:00', end: '13:00' }], // lunch
-  alignment: 'start',
 })
 ```
+
+The result contains two slots: 09:00–09:30 and 09:30–10:00, in the configured
+timezone. Their `start` and `end` values are `Date` objects.
 
 See [Configuration](/api/configuration) for every option and its default.
 
@@ -38,14 +38,27 @@ how long each slot lasts. Set them equal (the default) for back-to-back slots, o
 make the interval smaller to overlap them:
 
 ```ts
-// 30-min slots starting every 15 min: 9:00 to 9:30, 9:15 to 9:45, and so on
-generateTimeslots({
+import { generateTimeslots } from 'timeslottr'
+
+// 30-minute meetings, with a new option starting every 15 minutes
+const slots = generateTimeslots({
   day: '2024-03-15',
+  timezone: 'America/New_York',
   range: { start: '09:00', end: '17:00' },
   slotDurationMinutes: 30,
   slotIntervalMinutes: 15,
 })
 ```
+
+A shorter interval offers more choices: a visitor can pick 09:00 or 09:15.
+Those options overlap, so your application still needs to record a booking and
+remove conflicting options when someone reserves one.
+
+| Duration | Interval | First two options |
+| --- | --- | --- |
+| 30 minutes | 30 minutes (default) | 09:00–09:30, 09:30–10:00 |
+| 30 minutes | 15 minutes | 09:00–09:30, 09:15–09:45 |
+| 30 minutes | 45 minutes | 09:00–09:30, 09:45–10:15 |
 
 ## Buffers and breaks
 
@@ -57,6 +70,20 @@ Use `excludedWindows` to remove breaks inside the range. Each remaining free
 segment is slotted separately, so no slot crosses a break. If a segment is
 shorter than `slotDurationMinutes`, it produces no slots by default. To allow
 shorter slots, set `minimumSlotDurationMinutes` and keep `includeEdge: true`.
+
+```ts
+import { generateTimeslots } from 'timeslottr'
+
+const slots = generateTimeslots({
+  day: '2024-03-15',
+  timezone: 'America/New_York',
+  range: { start: '09:00', end: '17:00' },
+  slotDurationMinutes: 30,
+  excludedWindows: [{ start: '12:00', end: '13:00' }],
+})
+
+slots.length // 14: six before lunch, eight after
+```
 
 ## Multiple days
 
@@ -77,6 +104,9 @@ const slots = generateDailyTimeslots(
   },
 )
 ```
+
+This returns 56 one-hour slots: eight per day for seven days, including the
+weekend. Use a weekday map below if your schedule only runs on selected days.
 
 ## Per-weekday schedules
 
@@ -109,12 +139,13 @@ const slots = generateDailyTimeslots(
 
 ## Booking windows
 
-A slot being on the calendar doesn't make it bookable. Nobody wants a meeting
-request for ten minutes from now, or one that lands eight months out.
-`minimumNoticeMinutes` and `maximumAdvanceDays` gate the generated slots against
-the clock, and work with every generator:
+Want two hours to prepare for a meeting, and bookings no more than 60 days
+ahead? Use `minimumNoticeMinutes` for lead time and `maximumAdvanceDays` for
+the latest allowed start. Both work with every generator:
 
 ```ts
+import { generateDailyTimeslots } from 'timeslottr'
+
 const slots = generateDailyTimeslots(
   { start: '2024-03-01', end: '2024-06-01' },
   {
@@ -152,7 +183,9 @@ explicitly to make output deterministic in tests, or to gate against a server
 clock instead of the caller's:
 
 ```ts
-generateTimeslots({
+import { generateTimeslots } from 'timeslottr'
+
+const slots = generateTimeslots({
   day: '2024-03-15',
   timezone: 'UTC',
   range: { start: '09:00', end: '17:00' },
@@ -166,8 +199,7 @@ generateTimeslots({
 The fixed `now` values above keep the examples repeatable. Omit `now` in a live
 booking flow to use the current clock.
 
-When neither option is set, `now` is never read and generation is a pure
-function of the range.
+When neither option is set, `now` is never read and generation does not filter out past dates.
 
 Next, factor in who is actually free. See
 [Multi-party availability](/docs/availability).
